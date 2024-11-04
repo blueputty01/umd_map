@@ -80,8 +80,6 @@ const Map = ({
           },
         };
 
-        // Define the radius of the circle in meters
-        const radius = 100; // 100 meters
 
         // Add a source for the user location circle
         if (map.getSource('user-location')) {
