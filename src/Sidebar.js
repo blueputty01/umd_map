@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import './Sidebar.css'; // Styles for the sidebar
 import { getClassroomAvailability } from './availability';
-import { DateTimePicker } from '@atlaskit/datetime-picker'; // Updated import
+import { DateTimePicker } from '@atlaskit/datetime-picker'; // Ensure this library is installed
 import PropTypes from 'prop-types';
 
 const Sidebar = ({
@@ -19,6 +19,7 @@ const Sidebar = ({
   const [selectedClassroom, setSelectedClassroom] = useState(null);
   const [showSearchOptions, setShowSearchOptions] = useState(false); // New state
   const [showDescription, setShowDescription] = useState(false); // New state for description
+  const [isNow, setIsNow] = useState(true); // New state for toggle
   const buildingRefs = useRef({}); // Store refs to building list items
 
   useEffect(() => {
@@ -35,7 +36,7 @@ const Sidebar = ({
       .catch((error) => console.error('Error loading building data:', error));
   }, []);
 
-  // Update expanded building when selectedBuilding changes
+  // Update expanded building when selectedBuilding or isNow changes
   useEffect(() => {
     if (selectedBuilding) {
       const matchingBuilding = buildings.find(
@@ -55,7 +56,7 @@ const Sidebar = ({
       setExpandedBuilding(null);
       setSelectedClassroom(null);
     }
-  }, [selectedBuilding, buildings]);
+  }, [selectedBuilding, buildings, isNow]);
 
   const handleBuildingClick = (building) => {
     setExpandedBuilding((prevBuilding) =>
@@ -77,16 +78,26 @@ const Sidebar = ({
   // Compute the schedule for the selected classroom and date
   const classroomSchedule = useMemo(() => {
     if (selectedClassroom) {
-      const selectedDateString = selectedStartDateTime
-        .toISOString()
-        .split('T')[0];
+      const today = new Date();
+      const selectedDateString = isNow
+        ? today.toISOString().split('T')[0]
+        : selectedStartDateTime.toISOString().split('T')[0];
+
+      const selectedStart = isNow ? today : selectedStartDateTime;
+      const selectedEnd = isNow
+        ? new Date(new Date().getTime() + 60 * 60 * 1000) // Current time + 1 hour
+        : selectedEndDateTime;
 
       const filteredSchedule = selectedClassroom.availability_times.filter(
         (timeRange) => {
-          const eventDateString = timeRange.date.split('T')[0];
-          return eventDateString === selectedDateString;
+          const eventDatePart = timeRange.date.split('T')[0];
+          return eventDatePart === selectedDateString;
         }
       );
+
+      if (filteredSchedule.length === 0) {
+        return [];
+      }
 
       // Remove duplicates based on time_start, time_end, and event_name
       const uniqueSchedule = [];
@@ -109,20 +120,23 @@ const Sidebar = ({
     } else {
       return [];
     }
-  }, [selectedClassroom, selectedStartDateTime]);
+  }, [selectedClassroom, selectedStartDateTime, selectedEndDateTime, isNow]);
 
-  // Converts string decimal hours to hh:mm AM/PM format
-  function decimalHoursToTimeString(decimalHoursStr) {
-    const decimalHours = parseFloat(decimalHoursStr);
-    const totalMinutes = decimalHours * 60;
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = Math.round(totalMinutes % 60);
+  // Converts decimal hours to a Date object based on the event's date
+  function decimalHoursToDate(date, decimalHours) {
+    const decimal = parseFloat(decimalHours);
+    const hours = Math.floor(decimal);
+    const minutes = Math.round((decimal - hours) * 60);
 
-    const date = new Date();
-    date.setHours(hours);
-    date.setMinutes(minutes);
-    date.setSeconds(0);
-    date.setMilliseconds(0); // Ensure milliseconds are zeroed
+    const eventDate = new Date(date);
+    eventDate.setHours(hours, minutes, 0, 0); // Set hours and minutes
+
+    return eventDate;
+  }
+
+  // Converts decimal hours to hh:mm AM/PM format
+  function decimalHoursToTimeString(decimalHours) {
+    const date = decimalHoursToDate(new Date(), decimalHours);
 
     return date.toLocaleTimeString([], {
       hour: 'numeric',
@@ -137,6 +151,21 @@ const Sidebar = ({
 
   const toggleDescription = () => {
     setShowDescription((prev) => !prev);
+  };
+
+  const handleToggleChange = () => {
+    setIsNow((prevIsNow) => {
+      const newIsNow = !prevIsNow;
+      if (newIsNow) {
+        // Switching to "Now" mode
+        const now = new Date();
+        const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+        onStartDateTimeChange(now);
+        onEndDateTimeChange(oneHourLater);
+      }
+      // else, switching to "Select Time Range" mode - do not change times
+      return newIsNow;
+    });
   };
 
   // Internal Handlers with Validation
@@ -188,13 +217,16 @@ const Sidebar = ({
         <div className="project-description">
           <h3>Project Description</h3>
           <p>
-            Developed by <strong>Andrew Xie</strong>, a Junior CS student, this application is inspired by <em>Spots</em>—made by Akshar Barot. I was motivated to create a similar solution for us at the University of Maryland (UMD), I integrated the UMD Building API and intercepted the 25live API to gather real-time availability information. This process involved manually labeling numerous buildings to ensure accurate and reliable data representation. Despite these challenges, the application successfully provides UMD students with up-to-date information on open classrooms, enhancing their study experience with more options for quiet and productive spaces on campus.
+            Developed by <strong>Andrew Xie</strong>, a Junior Computer Science student, this application is inspired by <em>Spots</em>—a web platform designed to help University of Waterloo students find available classrooms for studying. Motivated to create a similar solution for the University of Maryland (UMD), I integrated the UMD Building API and intercepted the 25live API to gather real-time availability information. This process involved manually labeling numerous buildings to ensure accurate and reliable data representation. Despite these challenges, the application successfully provides UMD students with up-to-date information on open classrooms, enhancing their study experience with more options for quiet and productive spaces on campus.
           </p>
 
           <h4>Features</h4>
           <ul>
             <li>
               <strong>Displays Open Classrooms Across UMD Campus:</strong> View available classrooms in real-time across all buildings.
+            </li>
+            <li>
+              <strong>Sorts Classrooms by Proximity:</strong> Easily find the nearest available classroom based on your current location.
             </li>
             <li>
               <strong>Real-Time Availability Updates:</strong> Receive up-to-date information on classroom availability to make informed decisions.
@@ -209,41 +241,55 @@ const Sidebar = ({
         </div>
       )}
 
-      {/* Toggle Button for Search Options */}
-      <div className="toggle-search">
-        <button className="toggle-button" onClick={toggleSearchOptions}>
-          {showSearchOptions ? 'Hide Search Options' : 'Show Search Options'}
-          <span style={{ marginLeft: '10px' }}>
-            {showSearchOptions ? '▲' : '▼'}
-          </span>
-        </button>
+      {/* Toggle Switch for "Now" vs. Custom Time */}
+      <div className="toggle-now">
+        <label className="switch">
+          <input type="checkbox" checked={!isNow} onChange={handleToggleChange} />
+          <span className="slider round"></span>
+        </label>
+        <span className="toggle-label">{isNow ? 'Now' : 'Select Time Range'}</span>
       </div>
+
+      {/* Toggle Button for Search Options */}
+      {!isNow && (
+        <div className="toggle-search">
+          <button className="toggle-button" onClick={toggleSearchOptions}>
+            {showSearchOptions ? 'Hide Search Options' : 'Show Search Options'}
+            <span style={{ marginLeft: '10px' }}>
+              {showSearchOptions ? '▲' : '▼'}
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Search Options Section */}
-      <div className={`search-options ${showSearchOptions ? 'open' : ''}`}>
-        <div className="date-time-picker">
-          <label htmlFor="start-datetime">Select Start Date and Time:</label>
-          <DateTimePicker
-            id="start-datetime"
-            onChange={handleStartDateTimeChangeInternal}
-            value={selectedStartDateTime.getTime()}
-            placeholder="Select start date and time"
-            // Removed timeZone to use local time
-          />
+      {!isNow && showSearchOptions && (
+        <div className="search-options open">
+          <div className="date-time-picker">
+            <label htmlFor="start-datetime">Select Start Date and Time:</label>
+            <DateTimePicker
+              id="start-datetime"
+              onChange={handleStartDateTimeChangeInternal}
+              value={selectedStartDateTime.getTime()}
+              placeholder="Select start date and time"
+              // Removed timeZone to use local time
+            />
+          </div>
+          <div className="date-time-picker">
+            <label htmlFor="end-datetime">Select End Date and Time:</label>
+            <DateTimePicker
+              id="end-datetime"
+              onChange={handleEndDateTimeChangeInternal}
+              value={selectedEndDateTime.getTime()}
+              placeholder="Select end date and time"
+              minDate={selectedStartDateTime.getTime()}
+              // Removed timeZone to use local time
+            />
+          </div>
         </div>
-        <div className="date-time-picker">
-          <label htmlFor="end-datetime">Select End Date and Time:</label>
-          <DateTimePicker
-            id="end-datetime"
-            onChange={handleEndDateTimeChangeInternal}
-            value={selectedEndDateTime.getTime()}
-            placeholder="Select end date and time"
-            minDate={selectedStartDateTime.getTime()}
-            // Removed timeZone to use local time
-          />
-        </div>
-      </div>
+      )}
 
+      {/* Building and Classroom Lists */}
       <ul className="building-list">
         {buildings.map((building) => (
           <li
@@ -266,8 +312,10 @@ const Sidebar = ({
                 {building.classrooms.map((room) => {
                   const availabilityStatus = getClassroomAvailability(
                     room,
-                    selectedStartDateTime,
-                    selectedEndDateTime
+                    isNow ? new Date() : selectedStartDateTime,
+                    isNow
+                      ? new Date(new Date().getTime() + 60 * 60 * 1000) // Current time + 1 hour
+                      : selectedEndDateTime
                   );
                   const isSelectedClassroom =
                     selectedClassroom && selectedClassroom.id === room.id;
@@ -292,23 +340,36 @@ const Sidebar = ({
                           <h4>Schedule for {room.name}</h4>
                           {classroomSchedule.length > 0 ? (
                             <ul>
-                              {classroomSchedule.map((timeRange, index) => (
-                                <li key={index}>
-                                  <strong>
-                                    {decimalHoursToTimeString(
-                                      timeRange.time_start
-                                    )}{' '}
-                                    -{' '}
-                                    {decimalHoursToTimeString(
-                                      timeRange.time_end
-                                    )}
-                                  </strong>
-                                  : <em>{timeRange.event_name}</em>
-                                </li>
-                              ))}
+                              {classroomSchedule.map((timeRange, index) => {
+                                const eventStart = decimalHoursToDate(
+                                  new Date(timeRange.date),
+                                  timeRange.time_start
+                                );
+                                const eventEnd = decimalHoursToDate(
+                                  new Date(timeRange.date),
+                                  timeRange.time_end
+                                );
+                                const now = new Date();
+                                const isActive =
+                                  now >= eventStart && now <= eventEnd;
+
+                                return (
+                                  <li
+                                    key={index}
+                                    className={isActive ? 'active-event' : ''}
+                                  >
+                                    <strong>
+                                      {decimalHoursToTimeString(timeRange.time_start)}{' '}
+                                      -{' '}
+                                      {decimalHoursToTimeString(timeRange.time_end)}
+                                    </strong>
+                                    : <em>{timeRange.event_name}</em>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           ) : (
-                            <p>No events scheduled for this day.</p>
+                            <p>No events scheduled for this time.</p>
                           )}
                         </div>
                       )}

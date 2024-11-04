@@ -20,6 +20,30 @@ function isUniversityHoliday(date) {
   return UNIVERSITY_HOLIDAYS.includes(formattedDate);
 }
 
+/**
+ * Converts decimal hours to a Date object based on the event's date.
+ * @param {Date} date
+ * @param {number} decimalHours
+ * @returns {Date}
+ */
+function decimalHoursToDate(date, decimalHours) {
+  const decimal = parseFloat(decimalHours);
+  const hours = Math.floor(decimal);
+  const minutes = Math.round((decimal - hours) * 60);
+
+  const eventDate = new Date(date);
+  eventDate.setHours(hours, minutes, 0, 0); // Set hours and minutes
+
+  return eventDate;
+}
+
+/**
+ * Determines if the classroom is available within the selected time range.
+ * @param {Object} room - Classroom object containing availability_times
+ * @param {Date} selectedStartDateTime
+ * @param {Date} selectedEndDateTime
+ * @returns {string} - 'Available' or 'Unavailable'
+ */
 export function getClassroomAvailability(
   room,
   selectedStartDateTime = null,
@@ -67,8 +91,8 @@ export function getClassroomAvailability(
     return 'Unavailable';
   }
 
-  // Create date string in 'YYYY-MM-DDT00:00:00' format
-  const dateString = format(dateToCheck, "yyyy-MM-dd'T00:00:00'", { timeZone });
+  // Create date string in 'yyyy-MM-dd' format to match data
+  const dateString = format(dateToCheck, 'yyyy-MM-dd', { timeZone });
 
   if (!room.availability_times || room.availability_times.length === 0) {
     return 'No availability data';
@@ -76,16 +100,24 @@ export function getClassroomAvailability(
 
   // Filter availability times for the date to check
   const todayAvailability = room.availability_times.filter(
-    (timeRange) => timeRange.date === dateString
+    (timeRange) => {
+      // Extract date part from timeRange.date
+      const eventDatePart = timeRange.date.split('T')[0];
+      return eventDatePart === dateString;
+    }
   );
+
+  if (todayAvailability.length === 0) {
+    return 'No availability data';
+  }
 
   // Check for overlapping events
   const overlappingEvents = todayAvailability.filter((timeRange) => {
-    const eventStart = parseFloat(timeRange.time_start);
-    const eventEnd = parseFloat(timeRange.time_end);
+    const eventStart = decimalHoursToDate(dateToCheck, timeRange.time_start);
+    const eventEnd = decimalHoursToDate(dateToCheck, timeRange.time_end);
 
     // Check if the event overlaps with the selected time range
-    return selectedStartDecimal < eventEnd && selectedEndDecimal > eventStart;
+    return selectedStartDateTime < eventEnd && selectedEndDateTime > eventStart;
   });
 
   if (overlappingEvents.length === 0) {
@@ -95,6 +127,13 @@ export function getClassroomAvailability(
   }
 }
 
+/**
+ * Determines if any classroom in the building is available.
+ * @param {Array} classrooms - Array of classroom objects
+ * @param {Date} selectedStartDateTime
+ * @param {Date} selectedEndDateTime
+ * @returns {string} - 'Available' or 'Unavailable'
+ */
 export function getBuildingAvailability(
   classrooms,
   selectedStartDateTime = null,

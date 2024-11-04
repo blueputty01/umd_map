@@ -1,0 +1,69 @@
+/* src/legend.css */
+
+/* Container for the map legend */
+.map-legend {
+    position: absolute;           /* Positions the legend relative to the map container */
+    bottom: 20px;                    /* Distance from the top of the map */
+    right: 20px;                  /* Distance from the right of the map */
+    background-color: #eef2f7;    /* Light background matching the sidebar */
+    border: 1px solid #1a73e8;    /* Blue border for consistency with the sidebar */
+    padding: 10px;                /* Inner spacing */
+    border-radius: 4px;           /* Rounded corners */
+    font-family: 'Roboto', sans-serif; /* Consistent font with the sidebar */
+    font-size: 14px;              /* Font size matching the sidebar */
+    color: #555;                  /* Text color consistent with sidebar content */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    z-index: 1000;                /* Ensures the legend appears above other map elements */
+    width: 110px;                 /* Fixed width to prevent stretching */
+    max-height: 80px;             /* Maximum height to prevent vertical stretching */
+    overflow: hidden;             /* Hides any overflowing content */
+  }
+  
+  /* Individual legend items */
+  .legend-item {
+    display: flex;                /* Aligns color box and label horizontally */
+    align-items: center;          /* Vertically centers the items */
+    margin-bottom: 8px;           /* Space between legend items */
+  }
+  
+  /* Removes margin from the last legend item */
+  .legend-item:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Color box representing the status */
+  .color-box {
+    width: 15px;                  /* Width of the color box */
+    height: 15px;                 /* Height of the color box */
+    border-radius: 3px;           /* Slightly rounded corners */
+    margin-right: 8px;            /* Space between the color box and the label */
+  }
+  
+  /* Label for the legend item */
+  .legend-label {
+    font-size: 14px;              /* Font size matching the sidebar */
+    color: #555;                  /* Text color consistent with sidebar content */
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .map-legend {
+      top: 10px;
+      right: 10px;
+      padding: 8px;
+      font-size: 12px;
+      width: 140px;
+      max-height: 70px;
+    }
+  
+    .color-box {
+      width: 12px;
+      height: 12px;
+      margin-right: 6px;
+    }
+  
+    .legend-label {
+      font-size: 12px;
+    }
+  }
+  

@@ -23,7 +23,7 @@ const App = () => {
     setSelectedBuilding(building);
   }, []);
 
-  // Handler for start date-time change
+  // Handler for start date-time change using functional update
   const handleStartDateTimeChange = useCallback(
     (dateTime) => {
       if (!(dateTime instanceof Date) || isNaN(dateTime)) {
@@ -31,13 +31,16 @@ const App = () => {
         return;
       }
       setSelectedStartDateTime(dateTime);
-      // Adjust the end time if it's before the new start time
-      if (selectedEndDateTime <= dateTime) {
-        const newEndDateTime = new Date(dateTime.getTime() + 60 * 60 * 1000); // Add 1 hour
-        setSelectedEndDateTime(newEndDateTime);
-      }
+      // Adjust the end time if it's before the new start time using functional update
+      setSelectedEndDateTime((prevEnd) => {
+        if (prevEnd <= dateTime) {
+          const newEndDateTime = new Date(dateTime.getTime() + 60 * 60 * 1000); // Add 1 hour
+          return newEndDateTime;
+        }
+        return prevEnd;
+      });
     },
-    [selectedEndDateTime]
+    [] // No dependencies needed due to functional update
   );
 
   // Handler for end date-time change
