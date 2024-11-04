@@ -1,7 +1,7 @@
 
 # Campus Classroom Availability Map
 
-![Campus Map](https://example.com/campus-map-screenshot.png) <!-- Replace with an actual screenshot -->
+![Campus Map](image.jpg) <!-- Replace with an actual screenshot -->
 
 ## Table of Contents
 
