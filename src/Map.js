@@ -320,11 +320,12 @@ const Map = ({
 
   // Handler for the Recenter button
   const handleRecenter = () => {
-    if (mapRef.current && userLocation) {
-      const { longitude, latitude } = userLocation;
+    if (mapRef.current) {
+      // Set the initial coordinates here
+      const initialCenter = [-76.943487, 38.987822];
       mapRef.current.flyTo({
-        center: [longitude, latitude],
-        zoom: 15.6,
+        center: initialCenter,
+        zoom: 15.7,
         speed: 1.2,
         curve: 1.42,
         easing: (t) => t,
