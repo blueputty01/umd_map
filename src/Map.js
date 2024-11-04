@@ -19,6 +19,7 @@ const Map = ({
   const buildingsDataRef = useRef(null); // Store buildings data
   const isMapLoadedRef = useRef(false); // Flag to check if map is loaded
   const [userLocation, setUserLocation] = useState(null); // Store user's location
+  const hasFlownToUserLocation = useRef(false); // Flag to ensure flyTo happens only once
 
   // Initialize the map
   useEffect(() => {
@@ -101,16 +102,20 @@ const Map = ({
           });
         }
 
-        // Center the map on the user's location
-        map.flyTo({
-          center: [lng, lat],
-          zoom: 15.6,
-          speed: 1.2,
-          curve: 1.42,
-          easing: (t) => t,
-        });
+        // Center the map on the user's location only once
+        if (!hasFlownToUserLocation.current) {
+          map.flyTo({
+            center: [lng, lat],
+            zoom: 15.6,
+            speed: 1.2,
+            curve: 1.42,
+            easing: (t) => t,
+          });
+          hasFlownToUserLocation.current = true; // Set the flag to true
+        }
       });
 
+      // Load buildings data
       fetch(process.env.PUBLIC_URL + "/buildings_data.json")
         .then((response) => {
           if (!response.ok) {
@@ -268,7 +273,7 @@ const Map = ({
         const getColorExpression = [
           "case",
           ["get", "selected"],
-          "black", // Neon pink for selected building
+          "black", // Black color for selected building
           [
             "match",
             ["get", "availabilityStatus"],
@@ -315,12 +320,11 @@ const Map = ({
 
   // Handler for the Recenter button
   const handleRecenter = () => {
-    if (mapRef.current) {
-      // Set the initial coordinates here
-      const initialCenter = [-76.943487, 38.987822];
+    if (mapRef.current && userLocation) {
+      const { longitude, latitude } = userLocation;
       mapRef.current.flyTo({
-        center: initialCenter,
-        zoom: 15.7,
+        center: [longitude, latitude],
+        zoom: 15.6,
         speed: 1.2,
         curve: 1.42,
         easing: (t) => t,
