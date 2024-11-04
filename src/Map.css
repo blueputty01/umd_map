@@ -1,0 +1,78 @@
+/* src/Map.css */
+
+.map-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  
+  .map-inner-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  
+  .map-legend {
+    position: absolute;
+    bottom: 30px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white background */
+    padding: 10px;
+    font-size: 12px;
+    color: #333; /* Dark text */
+    z-index: 1; /* Ensure the legend is on top of other map elements */
+    border-radius: 4px; /* Rounded corners */
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+  }
+  
+  .color-box {
+    width: 15px;
+    height: 15px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+  }
+  
+  .color-box::after {
+    content: '';
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Recenter Button Styles */
+  .map-recenter-button {
+    position: absolute;
+    top: 10px; /* Adjust positioning as needed */
+    right: 10px;
+    background-color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+    z-index: 2; /* Ensure the button is above the map */
+  }
+  
+  .map-recenter-button:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* Optional: Adjust the position of the Mapbox default controls to make space for the recenter button */
+  .mapboxgl-ctrl-top-right {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
