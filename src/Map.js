@@ -320,7 +320,7 @@ const Map = ({
       const initialCenter = [-76.943487, 38.987822];
       mapRef.current.flyTo({
         center: initialCenter,
-        zoom: 15,
+        zoom: 15.7,
         speed: 1.2,
         curve: 1.42,
         easing: (t) => t,
