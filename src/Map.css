@@ -76,3 +76,21 @@
     gap: 10px;
   }
   
+  /* Responsive Adjustments (Optional) */
+  @media (max-width: 768px) {
+    .map-recenter-button {
+      top: 10px;
+      right: 10px;
+      width: 35px;
+      height: 35px;
+      font-size: 18px;
+    }
+  
+    .map-legend {
+      bottom: 20px;
+      left: 5px;
+      padding: 8px;
+      font-size: 10px;
+    }
+  }
+  
