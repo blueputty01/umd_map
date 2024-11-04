@@ -1,70 +1,119 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Campus Classroom Availability Map
+
+![Campus Map](https://example.com/campus-map-screenshot.png) <!-- Replace with an actual screenshot -->
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Running the Application](#running-the-application)
+- [Available Scripts](#available-scripts)
+- [Future Improvements](#future-improvements)
+- [Technologies Used](#technologies-used)
+- [Contributing](#contributing)
+- [License](#license)
+- [Contact](#contact)
+
+## Overview
+
+The **Campus Classroom Availability Map** is a React-based web application designed to help students at the University of Maryland (UMD) find available classrooms across the campus in real-time. Inspired by platforms like [Spots](https://spots.cs.washington.edu/), this application integrates the UMD Building API and intercepts the 25live API to provide up-to-date information on classroom availability. Whether you're looking for a quiet study space or a room equipped with specific facilities, this map offers a convenient and interactive solution.
+
+## Features
+
+- **Real-Time Classroom Availability:** View available classrooms across all UMD buildings in real-time.
+- **Interactive Map:** Visualize classroom locations on an interactive Mapbox map.
+- **Geolocation:** Automatically center the map based on your current location.
+- **Detailed Classroom Information:** Click on buildings to view individual classroom statuses and schedules.
+- **Recenter Button:** Easily recenter the map to your current location with a single click.
+
+## Getting Started
+
+Follow these instructions to set up and run the project on your local machine.
+
+### Prerequisites
+
+- **Node.js** (v14 or later)
+- **npm** (v6 or later)
+- **Mapbox Account:** You'll need a Mapbox access token. Sign up at [Mapbox](https://www.mapbox.com/) if you don't have one.
+
+### Installation
+
+1. **Clone the Repository:**
+
+   ```bash
+   git clone https://github.com/yourusername/campus-classroom-availability-map.git
+   cd campus-classroom-availability-map
+   ```
+
+2. **Install Dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables:**
+
+   Create a `.env` file in the root directory and add your Mapbox access token:
+
+   ```env
+   REACT_APP_MAPBOX_ACCESS_TOKEN=your_mapbox_access_token_here
+   ```
+
+4. **Add Building Data:**
+
+   Ensure that `buildings_data.json` is present in the `public` directory. This file should contain the necessary data about campus buildings and classrooms.
+
+### Running the Application
+
+Start the development server:
+
+   ```bash
+   npm start
+   ```
+
+Open `http://localhost:3000` in your browser to view the application. The page will reload automatically if you make any changes to the source code.
 
 ## Available Scripts
 
 In the project directory, you can run:
 
-### `npm start`
+- **`npm start`**: Runs the app in development mode.
+- **`npm test`**: Launches the test runner in interactive watch mode.
+- **`npm run build`**: Builds the app for production in the `build` folder.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Future Improvements
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Enhanced Mobile Responsiveness**
+- **Route Planning**
+- **User Authentication**
+- **Filtering and Sorting**
+- **Real-Time Notifications**
+- **Integration with Campus Services**
+- **Performance Optimization**
 
-### `npm test`
+## Technologies Used
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- React, Mapbox GL JS, JavaScript (ES6+), CSS Flexbox & Media Queries, Fetch API, PropTypes
 
-### `npm run build`
+## Contributing
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Fork the Repository**
+2. **Create a New Branch:** `git checkout -b feature/YourFeatureName`
+3. **Commit Your Changes:** `git commit -m "Add some feature"`
+4. **Push to the Branch:** `git push origin feature/YourFeatureName`
+5. **Open a Pull Request**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## License
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This project is licensed under the MIT License. See the LICENSE file for details.
 
-### `npm run eject`
+## Contact
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Andrew Xie  
+Junior CS @ UMD
+Email: andrewxie2004@gmail.com
+LinkedIn: [linkedin.com/in/andrewxie04](https://linkedin.com/in/andrewxie04)
