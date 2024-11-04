@@ -18,8 +18,10 @@ const Map = ({
   const mapRef = useRef(null);
   const buildingsDataRef = useRef(null); // Store buildings data
   const isMapLoadedRef = useRef(false); // Flag to check if map is loaded
-  const [userLocation, setUserLocation] = useState(null); // Store user's location
-  const hasFlownToUserLocation = useRef(false); // Flag to ensure flyTo happens only once
+
+  // Commented out user location state and ref
+  // const [userLocation, setUserLocation] = useState(null); // Store user's location
+  // const hasFlownToUserLocation = useRef(false); // Flag to ensure flyTo happens only once
 
   // Initialize the map
   useEffect(() => {
@@ -34,6 +36,8 @@ const Map = ({
 
     mapRef.current = map;
 
+    // Commented out Geolocate Control and related functionalities
+    /*
     // Add Geolocate Control to the Map before 'load' event
     const geolocateControl = new mapboxgl.GeolocateControl({
       positionOptions: {
@@ -114,6 +118,12 @@ const Map = ({
           hasFlownToUserLocation.current = true; // Set the flag to true
         }
       });
+    });
+    */
+
+    // Load buildings data
+    map.on("load", () => {
+      isMapLoadedRef.current = true; // Map is fully loaded
 
       // Load buildings data
       fetch(process.env.PUBLIC_URL + "/buildings_data.json")
@@ -339,7 +349,7 @@ const Map = ({
       {/* Recenter Button */}
       <button
         className="map-recenter-button"
-        title="Recenter to your location"
+        title="Recenter to original location" // Updated title
         onClick={handleRecenter}
       >
         📍
