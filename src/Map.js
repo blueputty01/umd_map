@@ -95,7 +95,7 @@ const Map = ({
             source: "user-location",
             paint: {
               "circle-radius": 10, // Fixed pixel radius; adjust as needed
-              "circle-color": "lightblue",
+              "circle-color": "purple",
               "circle-opacity": 1,
             },
           });
@@ -104,7 +104,7 @@ const Map = ({
         // Center the map on the user's location
         map.flyTo({
           center: [lng, lat],
-          zoom: 15,
+          zoom: 15.6,
           speed: 1.2,
           curve: 1.42,
           easing: (t) => t,
