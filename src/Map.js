@@ -1,6 +1,6 @@
 // src/Map.js
 
-import React, { useEffect, useRef, useCallback, useState } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import mapboxgl from "mapbox-gl";
 import "./Map.css"; // For map styles
 import { getBuildingAvailability } from "./availability";
@@ -19,12 +19,6 @@ const Map = ({
   const buildingsDataRef = useRef(null); // Store buildings data
   const isMapLoadedRef = useRef(false); // Flag to check if map is loaded
 
-  /* 
-  // Commented out user location state and reference
-  const [userLocation, setUserLocation] = useState(null); // Store user's location
-  const hasFlownToUserLocation = useRef(false); // Flag to ensure flyTo happens only once
-  */
-
   // Initialize the map
   useEffect(() => {
     const map = new mapboxgl.Map({
@@ -37,91 +31,6 @@ const Map = ({
     });
 
     mapRef.current = map;
-
-    /* 
-    // Commented out Geolocate Control and related user location handling
-    // Add Geolocate Control to the Map before 'load' event
-    const geolocateControl = new mapboxgl.GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: true,
-      },
-      trackUserLocation: true,
-      showUserHeading: true,
-    });
-
-    map.addControl(geolocateControl);
-
-    map.on("load", () => {
-      isMapLoadedRef.current = true; // Map is fully loaded
-
-      // Trigger the geolocation request after the control is added to the map
-      geolocateControl.trigger();
-
-      // Handle the geolocation event
-      geolocateControl.on("geolocate", (e) => {
-        const lng = e.coords.longitude;
-        const lat = e.coords.latitude;
-
-        // Update user location state
-        setUserLocation({ longitude: lng, latitude: lat });
-
-        // Remove existing user marker if any
-        const existingMarker = document.getElementById("user-marker");
-        if (existingMarker) {
-          existingMarker.remove();
-        }
-
-        // Add marker
-        const marker = new mapboxgl.Marker({ color: "blue" })
-          .setLngLat([lng, lat])
-          .addTo(map);
-        marker.getElement().id = "user-marker"; // Assign an ID for future reference
-
-        // Add or update a circle around the user's location
-        const userCircle = {
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: [lng, lat],
-          },
-        };
-
-        // Add a source for the user location circle
-        if (map.getSource("user-location")) {
-          map.getSource("user-location").setData(userCircle);
-        } else {
-          map.addSource("user-location", {
-            type: "geojson",
-            data: userCircle,
-          });
-
-          // Add a circle layer using Mapbox's circle layer with fixed radius
-          map.addLayer({
-            id: "user-location-circle",
-            type: "circle",
-            source: "user-location",
-            paint: {
-              "circle-radius": 10, // Fixed pixel radius; adjust as needed
-              "circle-color": "purple",
-              "circle-opacity": 1,
-            },
-          });
-        }
-
-        // Center the map on the user's location only once
-        if (!hasFlownToUserLocation.current) {
-          map.flyTo({
-            center: [lng, lat],
-            zoom: 15.6,
-            speed: 1.2,
-            curve: 1.42,
-            easing: (t) => t,
-          });
-          hasFlownToUserLocation.current = true; // Set the flag to true
-        }
-      });
-    });
-    */
 
     map.on("load", () => {
       isMapLoadedRef.current = true; // Map is fully loaded
@@ -329,8 +238,6 @@ const Map = ({
     []
   );
 
-  /* 
-  // Commented out handler for the Recenter button
   // Handler for the Recenter button
   const handleRecenter = () => {
     if (mapRef.current) {
@@ -345,21 +252,18 @@ const Map = ({
       });
     }
   };
-  */
 
   return (
     <div className="map-wrapper">
       <div className="map-inner-container" ref={mapContainerRef} />
-      {/*
-      // Commented out Recenter Button
+      {/* Recenter Button */}
       <button
         className="map-recenter-button"
-        title="Recenter to your location"
+        title="Recenter map"
         onClick={handleRecenter}
       >
         📍
       </button>
-      */}
     </div>
   );
 };
