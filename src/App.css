@@ -21,3 +21,14 @@
   height: 100%; /* Fill the remaining vertical space */
   position: relative;
 }
+
+/* Apply 75% scaling only on mobile devices */
+@media (max-width: 768px) {
+  .app-container {
+    transform: scale(0.75);
+    transform-origin: top left;
+    width: 133.33vw;
+    height: 133.33vh;
+    overflow: hidden; /* Prevents any unwanted scrollbars */
+  }
+}
