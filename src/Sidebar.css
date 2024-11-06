@@ -162,17 +162,108 @@ input:checked + .slider:before {
   padding: 10px 0;
 }
 
-.date-time-picker {
-  position: relative;
+.date-range-picker {
   margin-bottom: 20px;
-  /* Removed margin-left to align properly within the toggle */
 }
 
-.date-time-picker label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-  color: #444;
+.date-range-picker .react-aria-DateRangePicker {
+  width: 100%;
+}
+
+.date-range-picker .react-aria-DateRangePicker * {
+  box-sizing: border-box;
+}
+
+.date-range-picker .react-aria-DateRangePicker [role="group"] {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.date-range-picker .react-aria-DateRangePicker input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+  color: #333;
+}
+
+.date-range-picker .react-aria-DateRangePicker button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1a73e8;
+  font-size: 14px;
+}
+
+.date-range-picker .react-aria-DateRangePicker button:hover {
+  color: #1669c1;
+}
+
+.date-range-picker .react-aria-Popover {
+  position: absolute;
+  z-index: 1000;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+.date-range-picker .react-aria-Dialog {
+  padding: 10px;
+}
+
+.date-range-picker .react-aria-RangeCalendar {
+  display: flex;
+  flex-direction: column;
+}
+
+.date-range-picker .react-aria-RangeCalendar header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.date-range-picker .react-aria-RangeCalendar button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #1a73e8;
+}
+
+.date-range-picker .react-aria-RangeCalendar button:hover {
+  color: #1669c1;
+}
+
+.date-range-picker .react-aria-CalendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.date-range-picker .react-aria-CalendarCell {
+  text-align: center;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.date-range-picker .react-aria-CalendarCell--selected {
+  background-color: #1a73e8;
+  color: white;
+  border-radius: 4px;
+}
+
+.date-range-picker .react-aria-CalendarCell--hovered {
+  background-color: #e8f0fe;
+}
+
+.date-range-picker .react-aria-CalendarCell--disabled {
+  color: #ccc;
+  cursor: default;
 }
 
 .classroom-list {
@@ -241,7 +332,8 @@ input:checked + .slider:before {
   color: #ef4444;
 }
 
-.availability.no-availability-data {
+.availability.no-availability-data,
+.availability.no-data {
   background-color: rgba(128, 128, 128, 0.1);
   color: #808080;
 }

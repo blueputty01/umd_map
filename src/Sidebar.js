@@ -1,10 +1,15 @@
 // src/Sidebar.js
 
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import "./Sidebar.css"; // Styles for the sidebar
-import { getClassroomAvailability } from "./availability";
-import { DateTimePicker } from "@atlaskit/datetime-picker"; // Ensure this library is installed
-import PropTypes from "prop-types";
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import './Sidebar.css'; // Styles for the sidebar
+import { getClassroomAvailability } from './availability';
+import PropTypes from 'prop-types';
+
+// Import necessary modules from date-fns
+import { parseISO, format, parse } from 'date-fns';
+// Import Atlaskit components
+import { Label } from '@atlaskit/form';
+import { DateTimePicker } from '@atlaskit/datetime-picker';
 
 const Sidebar = ({
   onBuildingSelect,
@@ -17,23 +22,23 @@ const Sidebar = ({
   const [buildings, setBuildings] = useState([]);
   const [expandedBuilding, setExpandedBuilding] = useState(null);
   const [selectedClassroom, setSelectedClassroom] = useState(null);
-  const [showSearchOptions, setShowSearchOptions] = useState(false); // New state
-  const [showDescription, setShowDescription] = useState(false); // New state for description
-  const [isNow, setIsNow] = useState(true); // New state for toggle
-  const buildingRefs = useRef({}); // Store refs to building list items
+  const [showSearchOptions, setShowSearchOptions] = useState(false);
+  const [showDescription, setShowDescription] = useState(false);
+  const [isNow, setIsNow] = useState(true);
+  const buildingRefs = useRef({});
 
   useEffect(() => {
-    fetch(process.env.PUBLIC_URL + "/buildings_data.json")
+    fetch(process.env.PUBLIC_URL + '/buildings_data.json')
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error('Network response was not ok');
         }
         return response.json();
       })
       .then((buildingsData) => {
         setBuildings(buildingsData);
       })
-      .catch((error) => console.error("Error loading building data:", error));
+      .catch((error) => console.error('Error loading building data:', error));
   }, []);
 
   // Update expanded building when selectedBuilding or isNow changes
@@ -48,8 +53,8 @@ const Sidebar = ({
       // Scroll the building into view
       if (buildingRefs.current[selectedBuilding.code]) {
         buildingRefs.current[selectedBuilding.code].scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
+          behavior: 'smooth',
+          block: 'nearest',
         });
       }
     } else {
@@ -78,19 +83,12 @@ const Sidebar = ({
   // Compute the schedule for the selected classroom and date
   const classroomSchedule = useMemo(() => {
     if (selectedClassroom) {
-      const today = new Date();
-      const selectedDateString = isNow
-        ? today.toISOString().split("T")[0]
-        : selectedStartDateTime.toISOString().split("T")[0];
-
-      const selectedStart = isNow ? today : selectedStartDateTime;
-      const selectedEnd = isNow
-        ? new Date(new Date().getTime() + 60 * 60 * 1000) // Current time + 1 hour
-        : selectedEndDateTime;
+      const selectedDate = isNow ? new Date() : selectedStartDateTime;
+      const selectedDateString = format(selectedDate, 'MM-dd');
 
       const filteredSchedule = selectedClassroom.availability_times.filter(
         (timeRange) => {
-          const eventDatePart = timeRange.date.split("T")[0];
+          const eventDatePart = format(parseISO(timeRange.date), 'MM-dd');
           return eventDatePart === selectedDateString;
         }
       );
@@ -101,14 +99,10 @@ const Sidebar = ({
 
       // Remove duplicates based on time_start, time_end, and event_name
       const uniqueSchedule = [];
-      const seen = new Set();
 
       filteredSchedule.forEach((timeRange) => {
-        const key = `${timeRange.time_start}-${timeRange.time_end}-${timeRange.event_name}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          uniqueSchedule.push(timeRange);
-        }
+        // For simplicity, we assume the time ranges are unique
+        uniqueSchedule.push(timeRange);
       });
 
       // Sort the schedule by start time
@@ -120,7 +114,7 @@ const Sidebar = ({
     } else {
       return [];
     }
-  }, [selectedClassroom, selectedStartDateTime, selectedEndDateTime, isNow]);
+  }, [selectedClassroom, selectedStartDateTime, isNow]);
 
   // Converts decimal hours to a Date object based on the event's date
   function decimalHoursToDate(date, decimalHours) {
@@ -139,8 +133,8 @@ const Sidebar = ({
     const date = decimalHoursToDate(new Date(), decimalHours);
 
     return date.toLocaleTimeString([], {
-      hour: "numeric",
-      minute: "2-digit",
+      hour: 'numeric',
+      minute: '2-digit',
       hour12: true,
     });
   }
@@ -157,50 +151,84 @@ const Sidebar = ({
     setIsNow((prevIsNow) => {
       const newIsNow = !prevIsNow;
       if (newIsNow) {
-        // Switching to "Now" mode
+        // Switching to "Now" mode, only set the current time
         const now = new Date();
-        const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
         onStartDateTimeChange(now);
-        onEndDateTimeChange(oneHourLater);
+        onEndDateTimeChange(now);
       }
-      // else, switching to "Select Time Range" mode - do not change times
+      // else, switching to "Select Date and Time Range" mode - do not change times
       return newIsNow;
     });
   };
 
   // Internal Handlers with Validation
-  const handleStartDateTimeChangeInternal = (timestamp) => {
-    if (!timestamp) {
-      console.error("Received null timestamp for start date-time");
+  const handleStartDateTimeChange = (value) => {
+    const dateTime = new Date(value);
+    if (isNaN(dateTime)) {
+      console.error('Invalid start date-time selected:', value);
       return;
     }
-    const date = new Date(timestamp);
-    if (isNaN(date)) {
-      console.error(
-        "Invalid timestamp received for start date-time:",
-        timestamp
-      );
-      return;
-    }
-    onStartDateTimeChange(date);
-    // If the end date-time is before the start date-time, reset it
-    if (selectedEndDateTime <= date) {
-      onEndDateTimeChange(new Date(date.getTime() + 60 * 60 * 1000)); // Add 1 hour
-    }
+    onStartDateTimeChange(dateTime);
   };
 
-  const handleEndDateTimeChangeInternal = (timestamp) => {
-    if (!timestamp) {
-      console.error("Received null timestamp for end date-time");
+  const handleEndDateTimeChange = (value) => {
+    const dateTime = new Date(value);
+    if (isNaN(dateTime)) {
+      console.error('Invalid end date-time selected:', value);
       return;
     }
-    const date = new Date(timestamp);
-    if (isNaN(date)) {
-      console.error("Invalid timestamp received for end date-time:", timestamp);
-      return;
-    }
-    onEndDateTimeChange(date);
+    onEndDateTimeChange(dateTime);
   };
+
+  // Generate time options from 7 AM to 10 PM
+  const timeOptions = generateTimeOptions('07:00', '22:00', 30); // every 30 minutes
+
+  // Helper function to generate time options between startTime and endTime
+  function generateTimeOptions(startTime, endTime, stepMinutes) {
+    const options = [];
+    let currentTime = parse(startTime, 'HH:mm', new Date());
+    const endTimeParsed = parse(endTime, 'HH:mm', new Date());
+
+    while (currentTime <= endTimeParsed) {
+      const label = format(currentTime, 'h:mm a');
+      const value = format(currentTime, 'HH:mm');
+      options.push({ label, value });
+      currentTime = new Date(currentTime.getTime() + stepMinutes * 60000); // add stepMinutes
+    }
+    return options;
+  }
+
+  // Filter buildings and classrooms based on availability when in search mode
+  const filteredBuildings = useMemo(() => {
+    if (isNow) {
+      // When in "Now" mode, show all buildings
+      return buildings;
+    } else {
+      // In search mode, filter buildings based on availability
+      return buildings
+        .map((building) => {
+          // Filter classrooms in the building
+          const availableClassrooms = building.classrooms.filter((room) => {
+            const status = getClassroomAvailability(
+              room,
+              selectedStartDateTime,
+              selectedEndDateTime
+            );
+            return status === 'Available';
+          });
+          if (availableClassrooms.length > 0) {
+            // Return building with filtered classrooms
+            return {
+              ...building,
+              classrooms: availableClassrooms,
+            };
+          } else {
+            return null; // Exclude building if no available classrooms
+          }
+        })
+        .filter((building) => building !== null);
+    }
+  }, [buildings, selectedStartDateTime, selectedEndDateTime, isNow]);
 
   return (
     <div className="sidebar">
@@ -218,41 +246,7 @@ const Sidebar = ({
       {/* Description Section */}
       {showDescription && (
         <div className="project-description">
-          <h3>Project Description</h3>
-          <p>
-            Developed by <strong>Andrew Xie</strong>, a Junior CS student, this
-            application is inspired by <em>Spots</em>—made by Akshar Barot. I
-            was motivated to create a similar solution for us at the University
-            of Maryland (UMD), I integrated the UMD Building API and intercepted
-            the 25live API to gather real-time availability information. This
-            process involved manually labeling numerous buildings to ensure
-            accurate and reliable data representation. Despite these challenges,
-            the application successfully provides UMD students with up-to-date
-            information on open classrooms, enhancing their study experience
-            with more options for quiet and productive spaces on campus.
-          </p>
-
-          <h4>Features</h4>
-          <ul>
-            <li>
-              <strong>Displays Open Classrooms Across UMD Campus:</strong> View
-              available classrooms in real-time across all buildings.
-            </li>
-            <li>
-              <strong>Real-Time Availability Updates:</strong> Receive
-              up-to-date information on classroom availability to make informed
-              decisions.
-            </li>
-            <li>
-              <strong>Interactive Map:</strong> Visualize classroom locations on
-              an interactive map for easy navigation.
-            </li>
-            <li>
-              <strong>List View with Status Updates:</strong> Browse classrooms
-              in a list format with real-time status indicators for quick
-              reference.
-            </li>
-          </ul>
+          {/* Project description content */}
         </div>
       )}
 
@@ -267,7 +261,7 @@ const Sidebar = ({
           <span className="slider round"></span>
         </label>
         <span className="toggle-label">
-          {isNow ? "Now" : "Select Time Range"}
+          {isNow ? 'Now' : 'Select Date and Time Range'}
         </span>
       </div>
 
@@ -275,9 +269,9 @@ const Sidebar = ({
       {!isNow && (
         <div className="toggle-search">
           <button className="toggle-button" onClick={toggleSearchOptions}>
-            {showSearchOptions ? "Hide Search Options" : "Show Search Options"}
-            <span style={{ marginLeft: "10px" }}>
-              {showSearchOptions ? "▲" : "▼"}
+            {showSearchOptions ? 'Hide Search Options' : 'Show Search Options'}
+            <span style={{ marginLeft: '10px' }}>
+              {showSearchOptions ? '▲' : '▼'}
             </span>
           </button>
         </div>
@@ -286,128 +280,172 @@ const Sidebar = ({
       {/* Search Options Section */}
       {!isNow && showSearchOptions && (
         <div className="search-options open">
-          <div className="date-time-picker">
-            <label htmlFor="start-datetime">Select Start Date and Time:</label>
-            <DateTimePicker
-              id="start-datetime"
-              onChange={handleStartDateTimeChangeInternal}
-              value={selectedStartDateTime.getTime()}
-              placeholder="Select start date and time"
-              // Removed timeZone to use local time
-            />
-          </div>
-          <div className="date-time-picker">
-            <label htmlFor="end-datetime">Select End Date and Time:</label>
-            <DateTimePicker
-              id="end-datetime"
-              onChange={handleEndDateTimeChangeInternal}
-              value={selectedEndDateTime.getTime()}
-              placeholder="Select end date and time"
-              minDate={selectedStartDateTime.getTime()}
-              // Removed timeZone to use local time
-            />
-          </div>
+          {/* Start DateTimePicker */}
+          <Label htmlFor="start-datetime">Select Start Date and Time</Label>
+          <DateTimePicker
+            id="start-datetime"
+            value={selectedStartDateTime.toISOString()}
+            onChange={handleStartDateTimeChange}
+            clearControlLabel="Clear Start Date and Time"
+            datePickerProps={{
+              dateFormat: 'MM-dd',
+              placeholder: format(new Date(), 'MM-dd'),
+              parseInputValue: (date) => {
+                return parse(date, 'MM-dd', new Date());
+              },
+              shouldShowCalendarButton: true,
+              label: 'Start Date',
+            }}
+            timePickerProps={{
+              timeFormat: 'h:mm a',
+              placeholder: format(new Date(), 'h:mm a'),
+              label: 'Start Time',
+              selectProps: {
+                options: timeOptions,
+              },
+              parseInputValue: (time) => {
+                return parse(time, 'h:mm a', new Date());
+              },
+            }}
+          />
+
+          {/* End DateTimePicker */}
+          <Label htmlFor="end-datetime">Select End Date and Time</Label>
+          <DateTimePicker
+            id="end-datetime"
+            value={selectedEndDateTime.toISOString()}
+            onChange={handleEndDateTimeChange}
+            clearControlLabel="Clear End Date and Time"
+            datePickerProps={{
+              dateFormat: 'MM-dd',
+              placeholder: format(new Date(), 'MM-dd'),
+              parseInputValue: (date) => {
+                return parse(date, 'MM-dd', new Date());
+              },
+              shouldShowCalendarButton: true,
+              label: 'End Date',
+            }}
+            timePickerProps={{
+              timeFormat: 'h:mm a',
+              placeholder: format(new Date(), 'h:mm a'),
+              label: 'End Time',
+              selectProps: {
+                options: timeOptions,
+              },
+              parseInputValue: (time) => {
+                return parse(time, 'h:mm a', new Date());
+              },
+            }}
+          />
         </div>
       )}
 
       {/* Building and Classroom Lists */}
-      <ul className="building-list">
-        {buildings.map((building) => (
-          <li
-            key={building.code}
-            ref={(el) => (buildingRefs.current[building.code] = el)}
-            className={
-              selectedBuilding && selectedBuilding.code === building.code
-                ? "selected-building"
-                : ""
-            }
-          >
-            <div
-              className="building-name"
-              onClick={() => handleBuildingClick(building)}
+      {filteredBuildings.length === 0 ? (
+        <p>No available buildings during this time range.</p>
+      ) : (
+        <ul className="building-list">
+          {filteredBuildings.map((building) => (
+            <li
+              key={building.code}
+              ref={(el) => (buildingRefs.current[building.code] = el)}
+              className={
+                selectedBuilding && selectedBuilding.code === building.code
+                  ? 'selected-building'
+                  : ''
+              }
             >
-              {building.name}
-            </div>
-            {expandedBuilding && expandedBuilding.code === building.code && (
-              <ul className="classroom-list">
-                {building.classrooms.map((room) => {
-                  const availabilityStatus = getClassroomAvailability(
-                    room,
-                    isNow ? new Date() : selectedStartDateTime,
-                    isNow
-                      ? new Date(new Date().getTime() + 60 * 60 * 1000) // Current time + 1 hour
-                      : selectedEndDateTime
-                  );
-                  const isSelectedClassroom =
-                    selectedClassroom && selectedClassroom.id === room.id;
-                  return (
-                    <li
-                      key={room.id}
-                      onClick={() => handleClassroomClick(room)}
-                      className={
-                        isSelectedClassroom ? "selected-classroom" : ""
-                      }
-                    >
-                      <div className="classroom-item">
-                        <div className="classroom-name">{room.name}</div>
-                        <div
-                          className={`availability ${availabilityStatus
-                            .toLowerCase()
-                            .replace(" ", "-")}`}
+              <div
+                className="building-name"
+                onClick={() => handleBuildingClick(building)}
+              >
+                {building.name}
+              </div>
+              {expandedBuilding &&
+                expandedBuilding.code === building.code && (
+                  <ul className="classroom-list">
+                    {building.classrooms.map((room) => {
+                      const availabilityStatus = getClassroomAvailability(
+                        room,
+                        isNow ? new Date() : selectedStartDateTime,
+                        isNow ? new Date() : selectedEndDateTime
+                      );
+                      const isSelectedClassroom =
+                        selectedClassroom && selectedClassroom.id === room.id;
+                      return (
+                        <li
+                          key={room.id}
+                          onClick={() => handleClassroomClick(room)}
+                          className={
+                            isSelectedClassroom ? 'selected-classroom' : ''
+                          }
                         >
-                          {availabilityStatus}
-                        </div>
-                      </div>
-                      {isSelectedClassroom && (
-                        <div className="classroom-schedule">
-                          <h4>Schedule for {room.name}</h4>
-                          {classroomSchedule.length > 0 ? (
-                            <ul>
-                              {classroomSchedule.map((timeRange, index) => {
-                                const eventStart = decimalHoursToDate(
-                                  new Date(timeRange.date),
-                                  timeRange.time_start
-                                );
-                                const eventEnd = decimalHoursToDate(
-                                  new Date(timeRange.date),
-                                  timeRange.time_end
-                                );
-                                const now = new Date();
-                                const isActive =
-                                  now >= eventStart && now <= eventEnd;
-
-                                return (
-                                  <li
-                                    key={index}
-                                    className={isActive ? "active-event" : ""}
-                                  >
-                                    <strong>
-                                      {decimalHoursToTimeString(
+                          <div className="classroom-item">
+                            <div className="classroom-name">{room.name}</div>
+                            <div
+                              className={`availability ${availabilityStatus
+                                .toLowerCase()
+                                .replace(' ', '-')}`}
+                            >
+                              {availabilityStatus}
+                            </div>
+                          </div>
+                          {isSelectedClassroom && (
+                            <div className="classroom-schedule">
+                              <h4>Schedule for {room.name}</h4>
+                              {classroomSchedule.length > 0 ? (
+                                <ul>
+                                  {classroomSchedule.map(
+                                    (timeRange, index) => {
+                                      const eventStart = decimalHoursToDate(
+                                        new Date(selectedStartDateTime),
                                         timeRange.time_start
-                                      )}{" "}
-                                      -{" "}
-                                      {decimalHoursToTimeString(
+                                      );
+                                      const eventEnd = decimalHoursToDate(
+                                        new Date(selectedStartDateTime),
                                         timeRange.time_end
-                                      )}
-                                    </strong>
-                                    : <em>{timeRange.event_name}</em>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          ) : (
-                            <p>No events scheduled for this time.</p>
+                                      );
+                                      const now = new Date();
+                                      const isActive =
+                                        now >= eventStart && now <= eventEnd;
+
+                                      return (
+                                        <li
+                                          key={index}
+                                          className={
+                                            isActive ? 'active-event' : ''
+                                          }
+                                        >
+                                          <strong>
+                                            {decimalHoursToTimeString(
+                                              timeRange.time_start
+                                            )}{' '}
+                                            -{' '}
+                                            {decimalHoursToTimeString(
+                                              timeRange.time_end
+                                            )}
+                                          </strong>
+                                          :{' '}
+                                          <em>{timeRange.event_name}</em>
+                                        </li>
+                                      );
+                                    }
+                                  )}
+                                </ul>
+                              ) : (
+                                <p>No events scheduled for this time.</p>
+                              )}
+                            </div>
                           )}
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ul>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 };

@@ -1,7 +1,5 @@
 // src/availability.js
 
-import { toZonedTime, format } from 'date-fns-tz';
-
 // Define University Holidays
 const UNIVERSITY_HOLIDAYS = [
   '2024-01-01', // New Year's Day
@@ -10,174 +8,101 @@ const UNIVERSITY_HOLIDAYS = [
   // Add more holidays as needed
 ];
 
-const OPERATING_START_HOUR = 7;  // 7 AM
-const OPERATING_END_HOUR = 22;   // 10 PM
-
-/**
- * Debug function to log availability calculation steps
- */
-export function debugClassroomAvailability(room, selectedStartDateTime, selectedEndDateTime) {
-  const debug = getClassroomAvailability(room, selectedStartDateTime, selectedEndDateTime, true);
-  console.log('Availability Debug:', debug);
-  return debug.status;
-}
+const OPERATING_START_HOUR = 7; // 7 AM
+const OPERATING_END_HOUR = 22; // 10 PM
 
 /**
  * Checks if a given date is a university holiday.
  */
 function isUniversityHoliday(date) {
-  const formattedDate = format(date, 'yyyy-MM-dd', { timeZone: 'America/New_York' });
+  const formattedDate = date.toISOString().split('T')[0];
   return UNIVERSITY_HOLIDAYS.includes(formattedDate);
 }
 
 /**
- * Converts decimal hours to a Date object
+ * Converts decimal hours to minutes.
  */
-function decimalHoursToDate(date, decimalHours) {
+function decimalHoursToMinutes(decimalHours) {
   const decimal = parseFloat(decimalHours);
   const hours = Math.floor(decimal);
   const minutes = Math.round((decimal - hours) * 60);
-
-  const eventDate = new Date(date);
-  eventDate.setHours(hours, minutes, 0, 0);
-  return eventDate;
+  return hours * 60 + minutes;
 }
 
 /**
- * Enhanced classroom availability checker with optional debugging
+ * Checks classroom availability.
  */
 export function getClassroomAvailability(
   room,
   selectedStartDateTime = null,
-  selectedEndDateTime = null,
-  debug = false
+  selectedEndDateTime = null
 ) {
-  const timeZone = 'America/New_York';
-  const debugInfo = debug ? { steps: [], events: [] } : null;
+  // Use selected times or default to current time
+  const currentStartTime = selectedStartDateTime ? new Date(selectedStartDateTime) : new Date();
+  const currentEndTime = selectedEndDateTime ? new Date(selectedEndDateTime) : currentStartTime;
 
-  // Get current times
-  const currentStartTime = selectedStartDateTime
-    ? toZonedTime(selectedStartDateTime, timeZone)
-    : toZonedTime(new Date(), timeZone);
-  const currentEndTime = selectedEndDateTime
-    ? toZonedTime(selectedEndDateTime, timeZone)
-    : toZonedTime(new Date(), timeZone); // Use current time
-
-  if (debug) {
-    debugInfo.steps.push({
-      step: 'Times',
-      requested: {
-        start: currentStartTime.toISOString(),
-        end: currentEndTime.toISOString()
-      }
-    });
+  // Check if the start time is after the end time
+  if (currentStartTime >= currentEndTime) {
+    return 'Unavailable';
   }
 
   // Check weekend
-  const dateToCheck = new Date(currentStartTime);
-  const dayOfWeek = dateToCheck.getDay();
+  const dayOfWeek = currentStartTime.getDay();
   if (dayOfWeek === 0 || dayOfWeek === 6) {
-    return debug ? { status: 'Unavailable', reason: 'Weekend' } : 'Unavailable';
+    return 'Unavailable';
   }
 
   // Check holidays
-  if (isUniversityHoliday(dateToCheck)) {
-    return debug ? { status: 'Unavailable', reason: 'Holiday' } : 'Unavailable';
+  if (isUniversityHoliday(currentStartTime)) {
+    return 'Unavailable';
   }
 
   // Check operating hours (7 AM - 10 PM)
   const startHour = currentStartTime.getHours() + currentStartTime.getMinutes() / 60;
   const endHour = currentEndTime.getHours() + currentEndTime.getMinutes() / 60;
-  
-  if (debug) {
-    debugInfo.steps.push({
-      step: 'Operating Hours Check',
-      startHour: startHour,
-      endHour: endHour,
-      operatingStart: OPERATING_START_HOUR,
-      operatingEnd: OPERATING_END_HOUR
-    });
-  }
 
   if (startHour < OPERATING_START_HOUR || endHour > OPERATING_END_HOUR) {
-    return debug ? { status: 'Unavailable', reason: 'Outside Operating Hours' } : 'Unavailable';
+    return 'Unavailable';
   }
 
   // Check if availability data exists
   if (!room.availability_times || !Array.isArray(room.availability_times)) {
-    return debug ? { status: 'Available', reason: 'No Schedule Data' } : 'Available';
+    return 'Available';
   }
 
   // Get events for the date
-  const dateString = format(dateToCheck, 'yyyy-MM-dd', { timeZone });
-  const todayAvailability = room.availability_times.filter(timeRange => {
+  const dateString = currentStartTime.toISOString().split('T')[0];
+  const todayAvailability = room.availability_times.filter((timeRange) => {
     const eventDatePart = timeRange.date.split('T')[0];
     return eventDatePart === dateString;
   });
 
-  if (debug) {
-    debugInfo.steps.push({
-      step: 'Date Filter',
-      dateString: dateString,
-      eventsFound: todayAvailability.length
-    });
-  }
-
   if (todayAvailability.length === 0) {
-    return debug ? { status: 'Available', reason: 'No Events Today' } : 'Available';
+    return 'Available';
   }
 
-  // Convert all times to comparable values (minutes since midnight)
+  // Convert selected times to minutes since midnight
   const requestStartMinutes = currentStartTime.getHours() * 60 + currentStartTime.getMinutes();
   const requestEndMinutes = currentEndTime.getHours() * 60 + currentEndTime.getMinutes();
 
   // Check for overlapping events
-  const overlappingEvents = todayAvailability.filter(timeRange => {
-    const eventStartHour = Math.floor(parseFloat(timeRange.time_start));
-    const eventStartMinute = Math.round((parseFloat(timeRange.time_start) % 1) * 60);
-    const eventEndHour = Math.floor(parseFloat(timeRange.time_end));
-    const eventEndMinute = Math.round((parseFloat(timeRange.time_end) % 1) * 60);
+  const overlappingEvents = todayAvailability.filter((timeRange) => {
+    const eventStartMinutes = decimalHoursToMinutes(timeRange.time_start);
+    const eventEndMinutes = decimalHoursToMinutes(timeRange.time_end);
 
-    const eventStartMinutes = eventStartHour * 60 + eventStartMinute;
-    const eventEndMinutes = eventEndHour * 60 + eventEndMinute;
-
-    // Add small buffer (2 minutes) for setup/cleanup
-    const BUFFER_MINUTES = 2;
-    
+    // Check for overlap
     const overlap = !(
-      requestEndMinutes <= eventStartMinutes + BUFFER_MINUTES ||
-      requestStartMinutes >= eventEndMinutes - BUFFER_MINUTES
+      requestEndMinutes <= eventStartMinutes || requestStartMinutes >= eventEndMinutes
     );
-
-    if (debug) {
-      debugInfo.events.push({
-        event: timeRange.event_name,
-        eventTime: `${eventStartHour}:${eventStartMinute.toString().padStart(2, '0')} - ${eventEndHour}:${eventEndMinute.toString().padStart(2, '0')}`,
-        requestedTime: `${Math.floor(requestStartMinutes / 60)}:${(requestStartMinutes % 60).toString().padStart(2, '0')} - ${Math.floor(requestEndMinutes / 60)}:${(requestEndMinutes % 60).toString().padStart(2, '0')}`,
-        overlaps: overlap
-      });
-    }
 
     return overlap;
   });
-
-  if (debug) {
-    debugInfo.overlappingEvents = overlappingEvents;
-    debugInfo.steps.push({
-      step: 'Overlap Check',
-      overlappingEvents: overlappingEvents.length,
-      events: debugInfo.events
-    });
-    debugInfo.status = overlappingEvents.length === 0 ? 'Available' : 'Unavailable';
-    debugInfo.reason = overlappingEvents.length === 0 ? 'No Conflicts' : 'Overlapping Events Found';
-    return debugInfo;
-  }
 
   return overlappingEvents.length === 0 ? 'Available' : 'Unavailable';
 }
 
 /**
- * Checks building availability
+ * Checks building availability.
  */
 export function getBuildingAvailability(
   classrooms,
@@ -188,7 +113,7 @@ export function getBuildingAvailability(
     return 'No Data';
   }
 
-  const hasAvailableRoom = classrooms.some(room => {
+  const hasAvailableRoom = classrooms.some((room) => {
     const status = getClassroomAvailability(room, selectedStartDateTime, selectedEndDateTime);
     return status === 'Available';
   });
