@@ -10,8 +10,8 @@ const UNIVERSITY_HOLIDAYS = [
   // Add more holidays as needed
 ];
 
-const OPERATING_START_HOUR = 7;  // 7 AM
-const OPERATING_END_HOUR = 22;   // 10 PM
+const OPERATING_START_HOUR = 8;  // 7 AM
+const OPERATING_END_HOUR = 23;   // 10 PM
 
 /**
  * Debug function to log availability calculation steps
@@ -61,7 +61,7 @@ export function getClassroomAvailability(
     : toZonedTime(new Date(), timeZone);
   const currentEndTime = selectedEndDateTime
     ? toZonedTime(selectedEndDateTime, timeZone)
-    : toZonedTime(new Date(Date.now() + 3600000), timeZone); // 1 hour from now
+    : toZonedTime(new Date(), timeZone); // Use current time
 
   if (debug) {
     debugInfo.steps.push({

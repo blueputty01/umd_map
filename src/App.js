@@ -6,15 +6,9 @@ import Map from './Map';
 import './App.css'; // Import the CSS file for styling
 
 const App = () => {
-  // Initialize start date-time to current date and time
+  // Initialize both start and end date-time to current date and time
   const [selectedStartDateTime, setSelectedStartDateTime] = useState(() => new Date());
-
-  // Initialize end date-time to one hour later
-  const [selectedEndDateTime, setSelectedEndDateTime] = useState(() => {
-    const oneHourLater = new Date();
-    oneHourLater.setHours(oneHourLater.getHours() + 1);
-    return oneHourLater;
-  });
+  const [selectedEndDateTime, setSelectedEndDateTime] = useState(() => new Date());
 
   const [selectedBuilding, setSelectedBuilding] = useState(null);
 
@@ -34,13 +28,12 @@ const App = () => {
       // Adjust the end time if it's before the new start time using functional update
       setSelectedEndDateTime((prevEnd) => {
         if (prevEnd <= dateTime) {
-          const newEndDateTime = new Date(dateTime.getTime() + 60 * 60 * 1000); // Add 1 hour
-          return newEndDateTime;
+          return new Date(dateTime.getTime()); // Set end time equal to start time
         }
         return prevEnd;
       });
     },
-    [] // No dependencies needed due to functional update
+    []
   );
 
   // Handler for end date-time change
