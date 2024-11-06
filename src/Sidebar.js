@@ -247,6 +247,41 @@ const Sidebar = ({
       {showDescription && (
         <div className="project-description">
           {/* Project description content */}
+          <h3>Project Description</h3>
+          <p>
+            Developed by <strong>Andrew Xie</strong>, a Junior CS student, this
+            application is inspired by <em>Spots</em>—made by Akshar Barot. I
+            was motivated to create a similar solution for us at the University
+            of Maryland (UMD), I integrated the UMD Building API and intercepted
+            the 25live API to gather real-time availability information. This
+            process involved manually labeling numerous buildings to ensure
+            accurate and reliable data representation. Despite these challenges,
+            the application successfully provides UMD students with up-to-date
+            information on open classrooms, enhancing their study experience
+            with more options for quiet and productive spaces on campus.
+          </p>
+
+          <h4>Features</h4>
+          <ul>
+            <li>
+              <strong>Displays Open Classrooms Across UMD Campus:</strong> View
+              available classrooms in real-time across all buildings.
+            </li>
+            <li>
+              <strong>Real-Time Availability Updates:</strong> Receive
+              up-to-date information on classroom availability to make informed
+              decisions.
+            </li>
+            <li>
+              <strong>Interactive Map:</strong> Visualize classroom locations on
+              an interactive map for easy navigation.
+            </li>
+            <li>
+              <strong>List View with Status Updates:</strong> Browse classrooms
+              in a list format with real-time status indicators for quick
+              reference.
+            </li>
+          </ul>
         </div>
       )}
 
