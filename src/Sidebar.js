@@ -9,7 +9,10 @@ import PropTypes from 'prop-types';
 import { parseISO, format, parse } from 'date-fns';
 // Import Atlaskit components
 import { Label } from '@atlaskit/form';
-import { DateTimePicker } from '@atlaskit/datetime-picker';
+import { DatePicker, TimePicker } from '@atlaskit/datetime-picker';
+
+// Define duration for "Now" mode in minutes (not used since we check availability at the current moment)
+const NOW_DURATION_MINUTES = 0;
 
 const Sidebar = ({
   onBuildingSelect,
@@ -84,11 +87,11 @@ const Sidebar = ({
   const classroomSchedule = useMemo(() => {
     if (selectedClassroom) {
       const selectedDate = isNow ? new Date() : selectedStartDateTime;
-      const selectedDateString = format(selectedDate, 'MM-dd');
+      const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
 
       const filteredSchedule = selectedClassroom.availability_times.filter(
         (timeRange) => {
-          const eventDatePart = format(parseISO(timeRange.date), 'MM-dd');
+          const eventDatePart = timeRange.date.split('T')[0];
           return eventDatePart === selectedDateString;
         }
       );
@@ -116,7 +119,9 @@ const Sidebar = ({
     }
   }, [selectedClassroom, selectedStartDateTime, isNow]);
 
-  // Converts decimal hours to a Date object based on the event's date
+  /**
+   * Converts decimal hours to a Date object based on the event's date
+   */
   function decimalHoursToDate(date, decimalHours) {
     const decimal = parseFloat(decimalHours);
     const hours = Math.floor(decimal);
@@ -128,15 +133,12 @@ const Sidebar = ({
     return eventDate;
   }
 
-  // Converts decimal hours to hh:mm AM/PM format
+  /**
+   * Converts decimal hours to 'h:mm a' format in 12-hour time
+   */
   function decimalHoursToTimeString(decimalHours) {
     const date = decimalHoursToDate(new Date(), decimalHours);
-
-    return date.toLocaleTimeString([], {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
+    return format(date, 'h:mm a');
   }
 
   const toggleSearchOptions = () => {
@@ -151,63 +153,112 @@ const Sidebar = ({
     setIsNow((prevIsNow) => {
       const newIsNow = !prevIsNow;
       if (newIsNow) {
-        // Switching to "Now" mode, only set the current time
+        // Switching to "Now" mode, set the time to current time
         const now = new Date();
         onStartDateTimeChange(now);
         onEndDateTimeChange(now);
+      } else {
+        // Switching to "Select Date and Time Range" mode - do not change times
+        // Optionally, you can reset the times or keep the previous selection
       }
-      // else, switching to "Select Date and Time Range" mode - do not change times
       return newIsNow;
     });
   };
 
-  // Internal Handlers with Validation
-  const handleStartDateTimeChange = (value) => {
-    const dateTime = new Date(value);
-    if (isNaN(dateTime)) {
-      console.error('Invalid start date-time selected:', value);
+  // Handlers for date and time changes
+  const handleStartDateChangeInternal = (value) => {
+    // value is in 'YYYY-MM-DD' format
+    const parsedDate = parseISO(value);
+    if (isNaN(parsedDate)) {
+      console.error('Invalid start date selected:', value);
       return;
     }
-    onStartDateTimeChange(dateTime);
+
+    // Update selectedStartDateTime by setting the date, keeping the time
+    onStartDateTimeChange((prevDateTime) => {
+      const newDateTime = new Date(prevDateTime);
+      newDateTime.setFullYear(parsedDate.getFullYear());
+      newDateTime.setMonth(parsedDate.getMonth());
+      newDateTime.setDate(parsedDate.getDate());
+      return newDateTime;
+    });
   };
 
-  const handleEndDateTimeChange = (value) => {
-    const dateTime = new Date(value);
-    if (isNaN(dateTime)) {
-      console.error('Invalid end date-time selected:', value);
+  const handleStartTimeChangeInternal = (value) => {
+    const parsedTime = parse(value, 'h:mm a', new Date());
+    if (isNaN(parsedTime)) {
+      console.error('Invalid start time selected:', value);
       return;
     }
-    onEndDateTimeChange(dateTime);
+    // Update selectedStartDateTime by setting the hours and minutes
+    onStartDateTimeChange((prevDateTime) => {
+      const newDateTime = new Date(prevDateTime);
+      newDateTime.setHours(parsedTime.getHours());
+      newDateTime.setMinutes(parsedTime.getMinutes());
+      return newDateTime;
+    });
   };
 
-  // Generate time options from 7 AM to 10 PM
-  const timeOptions = generateTimeOptions('07:00', '22:00', 30); // every 30 minutes
+  const handleEndDateChangeInternal = (value) => {
+    // value is in 'YYYY-MM-DD' format
+    const parsedDate = parseISO(value);
+    if (isNaN(parsedDate)) {
+      console.error('Invalid end date selected:', value);
+      return;
+    }
+
+    // Update selectedEndDateTime by setting the date, keeping the time
+    onEndDateTimeChange((prevDateTime) => {
+      const newDateTime = new Date(prevDateTime);
+      newDateTime.setFullYear(parsedDate.getFullYear());
+      newDateTime.setMonth(parsedDate.getMonth());
+      newDateTime.setDate(parsedDate.getDate());
+      return newDateTime;
+    });
+  };
+
+  const handleEndTimeChangeInternal = (value) => {
+    const parsedTime = parse(value, 'h:mm a', new Date());
+    if (isNaN(parsedTime)) {
+      console.error('Invalid end time selected:', value);
+      return;
+    }
+    // Update selectedEndDateTime by setting the hours and minutes
+    onEndDateTimeChange((prevDateTime) => {
+      const newDateTime = new Date(prevDateTime);
+      newDateTime.setHours(parsedTime.getHours());
+      newDateTime.setMinutes(parsedTime.getMinutes());
+      return newDateTime;
+    });
+  };
+
+  // Generate time options from 7:00 AM to 10:00 PM in 12-hour format
+  const timeOptions = generateTimeOptions('7:00 AM', '10:00 PM', 30); // every 30 minutes
 
   // Helper function to generate time options between startTime and endTime
   function generateTimeOptions(startTime, endTime, stepMinutes) {
     const options = [];
-    let currentTime = parse(startTime, 'HH:mm', new Date());
-    const endTimeParsed = parse(endTime, 'HH:mm', new Date());
+    let currentTime = parse(startTime, 'h:mm a', new Date());
+    const endTimeParsed = parse(endTime, 'h:mm a', new Date());
 
     while (currentTime <= endTimeParsed) {
-      const label = format(currentTime, 'h:mm a');
-      const value = format(currentTime, 'HH:mm');
-      options.push({ label, value });
+      const timeString = format(currentTime, 'h:mm a');
+      options.push({ label: timeString, value: timeString });
       currentTime = new Date(currentTime.getTime() + stepMinutes * 60000); // add stepMinutes
     }
     return options;
   }
 
-  // Filter buildings and classrooms based on availability when in search mode
+  // Adjusted filtering of buildings and classrooms
   const filteredBuildings = useMemo(() => {
     if (isNow) {
-      // When in "Now" mode, show all buildings
+      // In "Now" mode, display all buildings and classrooms without filtering
       return buildings;
     } else {
-      // In search mode, filter buildings based on availability
+      // In "Search" mode, filter buildings and classrooms based on availability
       return buildings
         .map((building) => {
-          // Filter classrooms in the building
+          // Filter classrooms in the building based on availability
           const availableClassrooms = building.classrooms.filter((room) => {
             const status = getClassroomAvailability(
               room,
@@ -247,41 +298,11 @@ const Sidebar = ({
       {showDescription && (
         <div className="project-description">
           {/* Project description content */}
-          <h3>Project Description</h3>
           <p>
-            Developed by <strong>Andrew Xie</strong>, a Junior CS student, this
-            application is inspired by <em>Spots</em>—made by Akshar Barot. I
-            was motivated to create a similar solution for us at the University
-            of Maryland (UMD), I integrated the UMD Building API and intercepted
-            the 25live API to gather real-time availability information. This
-            process involved manually labeling numerous buildings to ensure
-            accurate and reliable data representation. Despite these challenges,
-            the application successfully provides UMD students with up-to-date
-            information on open classrooms, enhancing their study experience
-            with more options for quiet and productive spaces on campus.
+            Welcome to the Room Availability Dashboard. Here you can search for
+            available classrooms based on your selected time range or view
+            real-time availability in "Now" mode.
           </p>
-
-          <h4>Features</h4>
-          <ul>
-            <li>
-              <strong>Displays Open Classrooms Across UMD Campus:</strong> View
-              available classrooms in real-time across all buildings.
-            </li>
-            <li>
-              <strong>Real-Time Availability Updates:</strong> Receive
-              up-to-date information on classroom availability to make informed
-              decisions.
-            </li>
-            <li>
-              <strong>Interactive Map:</strong> Visualize classroom locations on
-              an interactive map for easy navigation.
-            </li>
-            <li>
-              <strong>List View with Status Updates:</strong> Browse classrooms
-              in a list format with real-time status indicators for quick
-              reference.
-            </li>
-          </ul>
         </div>
       )}
 
@@ -315,61 +336,49 @@ const Sidebar = ({
       {/* Search Options Section */}
       {!isNow && showSearchOptions && (
         <div className="search-options open">
-          {/* Start DateTimePicker */}
-          <Label htmlFor="start-datetime">Select Start Date and Time</Label>
-          <DateTimePicker
-            id="start-datetime"
-            value={selectedStartDateTime.toISOString()}
-            onChange={handleStartDateTimeChange}
-            clearControlLabel="Clear Start Date and Time"
-            datePickerProps={{
-              dateFormat: 'MM-dd',
-              placeholder: format(new Date(), 'MM-dd'),
-              parseInputValue: (date) => {
-                return parse(date, 'MM-dd', new Date());
-              },
-              shouldShowCalendarButton: true,
-              label: 'Start Date',
-            }}
-            timePickerProps={{
-              timeFormat: 'h:mm a',
-              placeholder: format(new Date(), 'h:mm a'),
-              label: 'Start Time',
-              selectProps: {
-                options: timeOptions,
-              },
-              parseInputValue: (time) => {
-                return parse(time, 'h:mm a', new Date());
-              },
+          {/* Start DatePicker and TimePicker */}
+          <Label htmlFor="start-date">Select Start Date</Label>
+          <DatePicker
+            id="start-date"
+            value={format(selectedStartDateTime, 'yyyy-MM-dd')}
+            onChange={handleStartDateChangeInternal}
+            dateFormat="MM-DD"
+            placeholder="MM-DD"
+            shouldShowCalendarButton={true}
+          />
+
+          <Label htmlFor="start-time">Select Start Time</Label>
+          <TimePicker
+            id="start-time"
+            value={format(selectedStartDateTime, 'h:mm a')}
+            onChange={handleStartTimeChangeInternal}
+            timeFormat="h:mm a"
+            placeholder="h:mm a"
+            selectProps={{
+              options: timeOptions,
             }}
           />
 
-          {/* End DateTimePicker */}
-          <Label htmlFor="end-datetime">Select End Date and Time</Label>
-          <DateTimePicker
-            id="end-datetime"
-            value={selectedEndDateTime.toISOString()}
-            onChange={handleEndDateTimeChange}
-            clearControlLabel="Clear End Date and Time"
-            datePickerProps={{
-              dateFormat: 'MM-dd',
-              placeholder: format(new Date(), 'MM-dd'),
-              parseInputValue: (date) => {
-                return parse(date, 'MM-dd', new Date());
-              },
-              shouldShowCalendarButton: true,
-              label: 'End Date',
-            }}
-            timePickerProps={{
-              timeFormat: 'h:mm a',
-              placeholder: format(new Date(), 'h:mm a'),
-              label: 'End Time',
-              selectProps: {
-                options: timeOptions,
-              },
-              parseInputValue: (time) => {
-                return parse(time, 'h:mm a', new Date());
-              },
+          {/* End DatePicker and TimePicker */}
+          <Label htmlFor="end-date">Select End Date</Label>
+          <DatePicker
+            id="end-date"
+            value={format(selectedEndDateTime, 'yyyy-MM-dd')}
+            onChange={handleEndDateChangeInternal}
+            dateFormat="MM-DD"
+            placeholder="MM-DD"
+            shouldShowCalendarButton={true}
+          />
+
+          <Label htmlFor="end-time">Select End Time</Label>
+          <TimePicker
+            id="end-time"
+            value={format(selectedEndDateTime, 'h:mm a')}
+            onChange={handleEndTimeChangeInternal}
+            timeFormat="h:mm a"
+            placeholder="h:mm a"
+            selectProps={{
+              options: timeOptions,
             }}
           />
         </div>
@@ -400,10 +409,11 @@ const Sidebar = ({
                 expandedBuilding.code === building.code && (
                   <ul className="classroom-list">
                     {building.classrooms.map((room) => {
+                      // Compute availability status
                       const availabilityStatus = getClassroomAvailability(
                         room,
-                        isNow ? new Date() : selectedStartDateTime,
-                        isNow ? new Date() : selectedEndDateTime
+                        isNow ? null : selectedStartDateTime,
+                        isNow ? null : selectedEndDateTime
                       );
                       const isSelectedClassroom =
                         selectedClassroom && selectedClassroom.id === room.id;
@@ -433,11 +443,15 @@ const Sidebar = ({
                                   {classroomSchedule.map(
                                     (timeRange, index) => {
                                       const eventStart = decimalHoursToDate(
-                                        new Date(selectedStartDateTime),
+                                        isNow
+                                          ? new Date()
+                                          : selectedStartDateTime,
                                         timeRange.time_start
                                       );
                                       const eventEnd = decimalHoursToDate(
-                                        new Date(selectedStartDateTime),
+                                        isNow
+                                          ? new Date()
+                                          : selectedStartDateTime,
                                         timeRange.time_end
                                       );
                                       const now = new Date();

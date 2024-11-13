@@ -6,43 +6,46 @@ import Map from './Map';
 import './App.css'; // Import the CSS file for styling
 
 const App = () => {
-  // Initialize both start and end date-time to current date and time
-  const [selectedStartDateTime, setSelectedStartDateTime] = useState(() => new Date());
-  const [selectedEndDateTime, setSelectedEndDateTime] = useState(() => new Date());
+  const [selectedStartDateTime, setSelectedStartDateTime] = useState(new Date());
+  const [selectedEndDateTime, setSelectedEndDateTime] = useState(new Date());
 
   const [selectedBuilding, setSelectedBuilding] = useState(null);
 
-  // Handler for building selection
   const handleBuildingSelect = useCallback((building) => {
     setSelectedBuilding(building);
   }, []);
 
-  // Handler for start date-time change using functional update
+  // Adjusted handlers to accept functional updates
   const handleStartDateTimeChange = useCallback(
-    (dateTime) => {
-      if (!(dateTime instanceof Date) || isNaN(dateTime)) {
-        console.error('Invalid dateTime received:', dateTime);
-        return;
-      }
-      setSelectedStartDateTime(dateTime);
-      // Adjust the end time if it's before the new start time using functional update
-      setSelectedEndDateTime((prevEnd) => {
-        if (prevEnd <= dateTime) {
-          return new Date(dateTime.getTime()); // Set end time equal to start time
+    (update) => {
+      setSelectedStartDateTime((prevDateTime) => {
+        const newDateTime = typeof update === 'function' ? update(prevDateTime) : update;
+        if (!(newDateTime instanceof Date) || isNaN(newDateTime)) {
+          console.error('Invalid dateTime received:', newDateTime);
+          return prevDateTime;
         }
-        return prevEnd;
+        // Ensure end time is not before start time
+        setSelectedEndDateTime((prevEnd) => {
+          if (prevEnd <= newDateTime) {
+            return new Date(newDateTime.getTime());
+          }
+          return prevEnd;
+        });
+        return newDateTime;
       });
     },
     []
   );
 
-  // Handler for end date-time change
-  const handleEndDateTimeChange = useCallback((dateTime) => {
-    if (!(dateTime instanceof Date) || isNaN(dateTime)) {
-      console.error('Invalid dateTime received:', dateTime);
-      return;
-    }
-    setSelectedEndDateTime(dateTime);
+  const handleEndDateTimeChange = useCallback((update) => {
+    setSelectedEndDateTime((prevDateTime) => {
+      const newDateTime = typeof update === 'function' ? update(prevDateTime) : update;
+      if (!(newDateTime instanceof Date) || isNaN(newDateTime)) {
+        console.error('Invalid dateTime received:', newDateTime);
+        return prevDateTime;
+      }
+      return newDateTime;
+    });
   }, []);
 
   return (
@@ -55,7 +58,6 @@ const App = () => {
         onStartDateTimeChange={handleStartDateTimeChange}
         onEndDateTimeChange={handleEndDateTimeChange}
       />
-      {/* Wrap Map inside a div with className="map-container" */}
       <div className="map-container">
         <Map
           selectedBuilding={selectedBuilding}
