@@ -11,9 +11,6 @@ import { parseISO, format, parse } from 'date-fns';
 import { Label } from '@atlaskit/form';
 import { DatePicker, TimePicker } from '@atlaskit/datetime-picker';
 
-// Define duration for "Now" mode in minutes (not used since we check availability at the current moment)
-const NOW_DURATION_MINUTES = 0;
-
 const Sidebar = ({
   onBuildingSelect,
   selectedBuilding,
@@ -21,6 +18,8 @@ const Sidebar = ({
   selectedEndDateTime,
   onStartDateTimeChange,
   onEndDateTimeChange,
+  showMap,
+  setShowMap, // Receive the state setter from App.js
 }) => {
   const [buildings, setBuildings] = useState([]);
   const [expandedBuilding, setExpandedBuilding] = useState(null);
@@ -294,17 +293,38 @@ const Sidebar = ({
         </button>
       </div>
 
-      {/* Description Section */}
       {showDescription && (
         <div className="project-description">
           {/* Project description content */}
+          <h3>Project Description</h3>
           <p>
-            Welcome to the Room Availability Dashboard. Here you can search for
-            available classrooms based on your selected time range or view
-            real-time availability in "Now" mode.
+            Developed by <strong>Andrew Xie</strong>, a Junior CS student. UMD Classroom Search Tool.
           </p>
+
+          <h4>Features</h4>
+          <ul>
+            <li>
+              <strong>Displays Open Classrooms Across UMD Campus:</strong> View
+              available classrooms in real-time across all buildings.
+            </li>
+            <li>
+              <strong>Real-Time Availability Updates:</strong> Receive
+              up-to-date information on classroom availability to make informed
+              decisions.
+            </li>
+            <li>
+              <strong>Interactive Map:</strong> Visualize classroom locations on
+              an interactive map for easy navigation.
+            </li>
+            <li>
+              <strong>List View with Status Updates:</strong> Browse classrooms
+              in a list format with real-time status indicators for quick
+              reference.
+            </li>
+          </ul>
         </div>
       )}
+
 
       {/* Toggle Switch for "Now" vs. Custom Time */}
       <div className="toggle-now">
@@ -318,6 +338,21 @@ const Sidebar = ({
         </label>
         <span className="toggle-label">
           {isNow ? 'Now' : 'Select Date and Time Range'}
+        </span>
+      </div>
+
+      {/* Toggle Switch for Map View */}
+      <div className="toggle-map">
+        <label className="switch">
+          <input
+            type="checkbox"
+            checked={showMap}
+            onChange={() => setShowMap((prev) => !prev)}
+          />
+          <span className="slider round"></span>
+        </label>
+        <span className="toggle-label">
+          {showMap ? 'Map View On' : 'Map View Off'}
         </span>
       </div>
 
@@ -507,6 +542,8 @@ Sidebar.propTypes = {
   selectedEndDateTime: PropTypes.instanceOf(Date).isRequired,
   onStartDateTimeChange: PropTypes.func.isRequired,
   onEndDateTimeChange: PropTypes.func.isRequired,
+  showMap: PropTypes.bool.isRequired, // New prop type
+  setShowMap: PropTypes.func.isRequired, // New prop type
 };
 
 export default Sidebar;

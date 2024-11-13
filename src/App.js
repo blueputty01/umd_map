@@ -10,6 +10,7 @@ const App = () => {
   const [selectedEndDateTime, setSelectedEndDateTime] = useState(new Date());
 
   const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [showMap, setShowMap] = useState(true); // New state variable for toggling map
 
   const handleBuildingSelect = useCallback((building) => {
     setSelectedBuilding(building);
@@ -49,7 +50,7 @@ const App = () => {
   }, []);
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${showMap ? '' : 'no-map'}`}>
       <Sidebar
         onBuildingSelect={handleBuildingSelect}
         selectedBuilding={selectedBuilding}
@@ -57,15 +58,19 @@ const App = () => {
         selectedEndDateTime={selectedEndDateTime}
         onStartDateTimeChange={handleStartDateTimeChange}
         onEndDateTimeChange={handleEndDateTimeChange}
+        showMap={showMap}
+        setShowMap={setShowMap} // Pass the state setter to Sidebar
       />
-      <div className="map-container">
-        <Map
-          selectedBuilding={selectedBuilding}
-          onBuildingSelect={handleBuildingSelect}
-          selectedStartDateTime={selectedStartDateTime}
-          selectedEndDateTime={selectedEndDateTime}
-        />
-      </div>
+      {showMap && (
+        <div className="map-container">
+          <Map
+            selectedBuilding={selectedBuilding}
+            onBuildingSelect={handleBuildingSelect}
+            selectedStartDateTime={selectedStartDateTime}
+            selectedEndDateTime={selectedEndDateTime}
+          />
+        </div>
+      )}
     </div>
   );
 };

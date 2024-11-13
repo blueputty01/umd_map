@@ -22,6 +22,16 @@
   position: relative;
 }
 
+/* When map is hidden, adjust the layout */
+.app-container.no-map .sidebar {
+  flex: 1;
+  max-width: 100%; /* Sidebar takes full width */
+}
+
+.app-container.no-map .map-container {
+  display: none;
+}
+
 /* Apply 75% scaling only on mobile devices */
 @media (max-width: 768px) {
   .app-container {
