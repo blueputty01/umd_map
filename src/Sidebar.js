@@ -570,7 +570,9 @@ const Sidebar = ({
 
       {/* Building and Classroom Lists */}
       {filteredBuildings.length === 0 ? (
-        <p>No available buildings during this time range.</p>
+        <p>{showFavorites && (favoriteBuildings.length === 0 && favoriteRooms.length === 0) 
+          ? "You haven't favorited any buildings or rooms yet. Click the ☆ icon next to a building or room to add it to your favorites!"
+          : "No available buildings during this time range."}</p>
       ) : (
         <ul className="building-list">
           {filteredBuildings.map((building) => (
@@ -651,10 +653,6 @@ const Sidebar = ({
                               </div>
                               
                               <div className="room-info-grid">
-                                <div className="room-info-item">
-                                  <span className="info-label">Capacity</span>
-                                  <span className="info-value">{room.capacity || "30"} people</span>
-                                </div>
                                 <div className="room-info-item">
                                   <span className="info-label">Type</span>
                                   <span className="info-value">{room.type || "Classroom"}</span>
