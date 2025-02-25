@@ -1,6 +1,13 @@
 // src/Sidebar.js
 
-import React, { useEffect, useState, useRef, useMemo } from "react";
+// React imports
+import React, { 
+  useEffect, 
+  useState, 
+  useRef, 
+  useMemo, 
+  useCallback 
+} from "react";
 import "./Sidebar.css"; // Styles for the sidebar
 import { getClassroomAvailability } from "./availability";
 import PropTypes from "prop-types";
@@ -20,6 +27,12 @@ const Sidebar = ({
   onEndDateTimeChange,
   showMap,
   setShowMap, // Receive the state setter from App.js
+  darkMode,
+  toggleDarkMode, // Dark mode toggle function
+  favoriteBuildings,
+  favoriteRooms,
+  toggleFavoriteBuilding,
+  toggleFavoriteRoom,
 }) => {
   const [buildings, setBuildings] = useState([]);
   const [expandedBuilding, setExpandedBuilding] = useState(null);
@@ -27,6 +40,7 @@ const Sidebar = ({
   const [showSearchOptions, setShowSearchOptions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [isNow, setIsNow] = useState(true);
+  const [showFavorites, setShowFavorites] = useState(false);
   const buildingRefs = useRef({});
 
   useEffect(() => {
@@ -253,12 +267,50 @@ const Sidebar = ({
 
   // Adjusted filtering of buildings and classrooms
   const filteredBuildings = useMemo(() => {
+    // Base buildings to filter
+    let baseBuildings = buildings;
+    
+    // If showing favorites mode, first filter to just favorite buildings or buildings with favorited rooms
+    if (showFavorites) {
+      // Get building codes that are favorited directly
+      const directlyFavoritedBuildingCodes = favoriteBuildings.map(b => b.code);
+      
+      // Get building codes that contain favorited rooms
+      const buildingCodesWithFavoritedRooms = favoriteRooms.map(r => r.buildingCode);
+      
+      // Combine unique building codes
+      const allFavoritedBuildingCodes = [...new Set([
+        ...directlyFavoritedBuildingCodes,
+        ...buildingCodesWithFavoritedRooms
+      ])];
+      
+      baseBuildings = buildings.filter(building => allFavoritedBuildingCodes.includes(building.code));
+      
+      return baseBuildings.map(building => {
+        // If the building is directly favorited, keep all its rooms
+        if (directlyFavoritedBuildingCodes.includes(building.code)) {
+          return building;
+        }
+        
+        // Otherwise filter to just favorited rooms
+        const favoritedRoomIds = favoriteRooms
+          .filter(r => r.buildingCode === building.code)
+          .map(r => r.id);
+        
+        return {
+          ...building,
+          classrooms: building.classrooms.filter(room => favoritedRoomIds.includes(room.id))
+        };
+      });
+    }
+    
+    // Standard filtering based on mode
     if (isNow) {
       // In "Now" mode, display all buildings and classrooms without filtering
-      return buildings;
+      return baseBuildings;
     } else {
       // In "Search" mode, filter buildings and classrooms based on availability
-      return buildings
+      return baseBuildings
         .map((building) => {
           // Filter classrooms in the building based on availability
           const availableClassrooms = building.classrooms.filter((room) => {
@@ -281,19 +333,53 @@ const Sidebar = ({
         })
         .filter((building) => building !== null);
     }
-  }, [buildings, selectedStartDateTime, selectedEndDateTime, isNow]);
+  }, [buildings, selectedStartDateTime, selectedEndDateTime, isNow, 
+      showFavorites, favoriteBuildings, favoriteRooms]);
+
+  // Check if a building is favorited
+  const isBuildingFavorite = (buildingCode) => {
+    return favoriteBuildings.some(b => b.code === buildingCode);
+  };
+  
+  // Check if a room is favorited
+  const isRoomFavorite = (roomId) => {
+    return favoriteRooms.some(r => r.id === roomId);
+  };
+  
+  // Handle toggling favorites mode
+  const toggleFavoritesMode = () => {
+    setShowFavorites(prev => !prev);
+  };
 
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${darkMode ? 'dark-mode' : ''}`}>
       <div className="sidebar-header">
         <h2 className="sidebar-title">Rooms</h2>
-        <button
-          className="info-button"
-          onClick={toggleDescription}
-          aria-label="Project Description"
-        >
-          ⓘ
-        </button>
+        <div className="header-controls">
+          <button
+            className={`favorites-toggle ${showFavorites ? 'active' : ''}`}
+            onClick={toggleFavoritesMode}
+            title={showFavorites ? "Show all rooms" : "Show favorites"}
+            aria-label={showFavorites ? "Show all rooms" : "Show favorites"}
+          >
+            {showFavorites ? '📋' : '⭐'}
+          </button>
+          <button
+            className="dark-mode-toggle"
+            onClick={toggleDarkMode}
+            title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {darkMode ? '☀️' : '🌙'}
+          </button>
+          <button
+            className="info-button"
+            onClick={toggleDescription}
+            aria-label="Project Description"
+          >
+            ⓘ
+          </button>
+        </div>
       </div>
 
       {showDescription && (
@@ -301,8 +387,7 @@ const Sidebar = ({
           {/* Project description content */}
           <h3>Project Description</h3>
           <p>
-            Developed by <strong>Andrew Xie</strong>, a Junior CS student. UMD
-            Classroom Search Tool.
+            UMD Classroom Search Tool to find available study and meeting spaces across campus.
           </p>
 
           <h4>Features</h4>
@@ -438,10 +523,20 @@ const Sidebar = ({
               }
             >
               <div
-                className="building-name"
+                className={`building-name ${isBuildingFavorite(building.code) ? 'favorited' : ''}`}
                 onClick={() => handleBuildingClick(building)}
               >
-                {building.name}
+                <span className="building-name-text">{building.name}</span>
+                <button 
+                  className={`favorite-button ${isBuildingFavorite(building.code) ? 'favorited' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent building click
+                    toggleFavoriteBuilding(building);
+                  }}
+                  title={isBuildingFavorite(building.code) ? "Remove from favorites" : "Add to favorites"}
+                >
+                  {isBuildingFavorite(building.code) ? '★' : '☆'}
+                </button>
               </div>
               {expandedBuilding && expandedBuilding.code === building.code && (
                 <ul className="classroom-list">
@@ -462,14 +557,26 @@ const Sidebar = ({
                           isSelectedClassroom ? "selected-classroom" : ""
                         }
                       >
-                        <div className="classroom-item">
+                        <div className={`classroom-item ${isRoomFavorite(room.id) ? 'favorited' : ''}`}>
                           <div className="classroom-name">{room.name}</div>
-                          <div
-                            className={`availability ${availabilityStatus
-                              .toLowerCase()
-                              .replace(" ", "-")}`}
-                          >
-                            {availabilityStatus}
+                          <div className="classroom-actions">
+                            <button 
+                              className={`favorite-button small ${isRoomFavorite(room.id) ? 'favorited' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent classroom click
+                                toggleFavoriteRoom(building, room);
+                              }}
+                              title={isRoomFavorite(room.id) ? "Remove from favorites" : "Add to favorites"}
+                            >
+                              {isRoomFavorite(room.id) ? '★' : '☆'}
+                            </button>
+                            <div
+                              className={`availability ${availabilityStatus
+                                .toLowerCase()
+                                .replace(" ", "-")}`}
+                            >
+                              {availabilityStatus}
+                            </div>
                           </div>
                         </div>
                         {isSelectedClassroom && (
@@ -535,8 +642,14 @@ Sidebar.propTypes = {
   selectedEndDateTime: PropTypes.instanceOf(Date).isRequired,
   onStartDateTimeChange: PropTypes.func.isRequired,
   onEndDateTimeChange: PropTypes.func.isRequired,
-  showMap: PropTypes.bool.isRequired, // New prop type
-  setShowMap: PropTypes.func.isRequired, // New prop type
+  showMap: PropTypes.bool.isRequired,
+  setShowMap: PropTypes.func.isRequired,
+  darkMode: PropTypes.bool,
+  toggleDarkMode: PropTypes.func,
+  favoriteBuildings: PropTypes.array,
+  favoriteRooms: PropTypes.array,
+  toggleFavoriteBuilding: PropTypes.func,
+  toggleFavoriteRoom: PropTypes.func,
 };
 
 export default Sidebar;

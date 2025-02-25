@@ -1,6 +1,6 @@
 // src/App.js
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import Map from './Map';
 import './App.css'; // Import the CSS file for styling
@@ -11,6 +11,20 @@ const App = () => {
 
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [showMap, setShowMap] = useState(true); // New state variable for toggling map
+  const [darkMode, setDarkMode] = useState(false); // State for dark mode toggle
+  
+  // Favorites system
+  const [favoriteBuildings, setFavoriteBuildings] = useState(() => {
+    // Initialize from localStorage if available
+    const saved = localStorage.getItem('favoriteBuildings');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [favoriteRooms, setFavoriteRooms] = useState(() => {
+    // Initialize from localStorage if available
+    const saved = localStorage.getItem('favoriteRooms');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const handleBuildingSelect = useCallback((building) => {
     setSelectedBuilding(building);
@@ -49,8 +63,63 @@ const App = () => {
     });
   }, []);
 
+  // Effect to apply dark mode class to body
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }, [darkMode]);
+  
+  // Effect to save favorites to localStorage
+  useEffect(() => {
+    localStorage.setItem('favoriteBuildings', JSON.stringify(favoriteBuildings));
+  }, [favoriteBuildings]);
+  
+  useEffect(() => {
+    localStorage.setItem('favoriteRooms', JSON.stringify(favoriteRooms));
+  }, [favoriteRooms]);
+  
+  // Toggle dark mode function
+  const toggleDarkMode = useCallback(() => {
+    setDarkMode(prev => !prev);
+  }, []);
+  
+  // Favorites management functions
+  const toggleFavoriteBuilding = useCallback((building) => {
+    setFavoriteBuildings(prev => {
+      const buildingCode = building.code;
+      const isAlreadyFavorite = prev.some(fav => fav.code === buildingCode);
+      
+      if (isAlreadyFavorite) {
+        return prev.filter(fav => fav.code !== buildingCode);
+      } else {
+        return [...prev, { code: buildingCode, name: building.name }];
+      }
+    });
+  }, []);
+  
+  const toggleFavoriteRoom = useCallback((building, room) => {
+    setFavoriteRooms(prev => {
+      const roomId = room.id;
+      const isAlreadyFavorite = prev.some(fav => fav.id === roomId);
+      
+      if (isAlreadyFavorite) {
+        return prev.filter(fav => fav.id !== roomId);
+      } else {
+        return [...prev, { 
+          id: roomId, 
+          name: room.name, 
+          buildingCode: building.code,
+          buildingName: building.name
+        }];
+      }
+    });
+  }, []);
+
   return (
-    <div className={`app-container ${showMap ? '' : 'no-map'}`}>
+    <div className={`app-container ${showMap ? '' : 'no-map'} ${darkMode ? 'dark-mode' : ''}`}>
       <Sidebar
         onBuildingSelect={handleBuildingSelect}
         selectedBuilding={selectedBuilding}
@@ -59,7 +128,13 @@ const App = () => {
         onStartDateTimeChange={handleStartDateTimeChange}
         onEndDateTimeChange={handleEndDateTimeChange}
         showMap={showMap}
-        setShowMap={setShowMap} // Pass the state setter to Sidebar
+        setShowMap={setShowMap}
+        darkMode={darkMode}
+        toggleDarkMode={toggleDarkMode}
+        favoriteBuildings={favoriteBuildings}
+        favoriteRooms={favoriteRooms}
+        toggleFavoriteBuilding={toggleFavoriteBuilding}
+        toggleFavoriteRoom={toggleFavoriteRoom}
       />
       {showMap && (
         <div className="map-container">
@@ -68,6 +143,7 @@ const App = () => {
             onBuildingSelect={handleBuildingSelect}
             selectedStartDateTime={selectedStartDateTime}
             selectedEndDateTime={selectedEndDateTime}
+            darkMode={darkMode}
           />
         </div>
       )}

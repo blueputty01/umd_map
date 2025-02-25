@@ -13,6 +13,7 @@ const Map = ({
   onBuildingSelect,
   selectedStartDateTime,
   selectedEndDateTime,
+  darkMode,
 }) => {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
@@ -21,14 +22,37 @@ const Map = ({
 
   // Initialize the map
   useEffect(() => {
+    // Check if we're on a mobile device
+    const isMobile = window.innerWidth <= 768;
+    
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/remagi/cm32mhtye00ve01pd1opq9gaj", // Use your custom map style
+      style: darkMode 
+        ? "mapbox://styles/mapbox/dark-v11" // Dark mode style
+        : "mapbox://styles/remagi/cm32mhtye00ve01pd1opq9gaj", // Light mode (custom style)
       center: [-76.943487, 38.987822],
       zoom: 15.51,
       pitch: 49.53,
       bearing: -35.53,
+      attributionControl: false // Disable default attribution control
     });
+    
+    // Add custom attribution control at the top-right instead of bottom
+    if (isMobile) {
+      map.addControl(
+        new mapboxgl.AttributionControl({
+          compact: true
+        }), 
+        'top-right'
+      );
+    } else {
+      map.addControl(
+        new mapboxgl.AttributionControl({
+          compact: false
+        }),
+        'bottom-right'
+      );
+    }
 
     mapRef.current = map;
 
@@ -76,13 +100,14 @@ const Map = ({
               const clickedFeature = features[0];
               const buildingProperties = clickedFeature.properties;
 
-              // Fly to the clicked building
+              // Fly to the clicked building with smoother animation
               map.flyTo({
                 center: clickedFeature.geometry.coordinates,
                 zoom: 17,
-                speed: 1.2,
-                curve: 1.42,
-                easing: (t) => t,
+                speed: 0.8, // Slower speed for smoother animation
+                curve: 1.8, // More pronounced curve for elegant movement
+                easing: (t) => t * (2 - t), // Ease-out cubic function for natural deceleration
+                duration: 1500, // Longer duration for smoother transition
               });
 
               if (onBuildingSelect) {
@@ -101,7 +126,7 @@ const Map = ({
 
     // Clean up on unmount
     return () => map.remove();
-  }, []); // Empty dependency array ensures this runs once
+  }, [darkMode]); // Re-run when dark mode changes
 
   // Update map data when selectedStartDateTime, selectedEndDateTime, or selectedBuilding changes
   useEffect(() => {
@@ -135,9 +160,10 @@ const Map = ({
       mapRef.current.flyTo({
         center: [longitude, latitude],
         zoom: 17,
-        speed: 1, // Adjust the speed for smoothness
-        curve: 1.42,
-        easing: (t) => t,
+        speed: 0.8, // Slower speed for smoother animation
+        curve: 1.8, // More pronounced curve for elegant movement 
+        easing: (t) => t * (2 - t), // Ease-out cubic function for natural deceleration
+        duration: 1500, // Longer duration for smoother transition
       });
     }
   }, [selectedBuilding]);
@@ -198,9 +224,9 @@ const Map = ({
             "match",
             ["get", "availabilityStatus"],
             "Available",
-            "#39FF14", // Neon green
+            "#38E54D", // Softer neon green
             "Unavailable",
-            "#FF073A", // Neon red
+            "#FF003C", // Bright neon red
             "No availability data",
             "#808080", // Gray
             "#808080", // Default to gray
@@ -246,9 +272,10 @@ const Map = ({
       mapRef.current.flyTo({
         center: initialCenter,
         zoom: 15.7,
-        speed: 1.2,
-        curve: 1.42,
-        easing: (t) => t,
+        speed: 0.8, // Slower speed for smoother animation
+        curve: 1.8, // More pronounced curve for elegant movement
+        easing: (t) => t * (2 - t), // Ease-out cubic function for natural deceleration
+        duration: 1800, // Even longer duration for recenter animation
       });
     }
   };

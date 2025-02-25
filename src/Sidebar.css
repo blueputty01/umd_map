@@ -4,11 +4,13 @@
 
 .sidebar {
   width: 300px;
-  padding: 15px;
+  padding: 20px;
   overflow-y: auto;
-  background-color: #f9f9f9;
-  font-family: 'Roboto', sans-serif;
-  border-right: 1px solid #ddd;
+  background-color: #f5f5f7; /* Apple-style light gray background */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Roboto', sans-serif;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.03); /* Subtle shadow for depth */
+  transition: all 0.3s ease; /* Smooth transition for all changes */
 }
 
 .sidebar-header {
@@ -18,10 +20,37 @@
   margin-bottom: 15px;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dark-mode-toggle, .favorites-toggle {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #0071e3;
+  padding: 0;
+  transition: transform 0.3s ease;
+}
+
+.dark-mode-toggle:hover, .favorites-toggle:hover {
+  transform: rotate(15deg) scale(1.1);
+}
+
+.favorites-toggle.active {
+  color: #ffb700;
+  text-shadow: 0 0 5px rgba(255, 183, 0, 0.5);
+}
+
 .sidebar-title {
-  font-size: 20px;
+  font-size: 24px;
+  font-weight: 600;
   margin: 0;
-  color: #333;
+  color: #1d1d1f; /* Apple's dark text color */
+  letter-spacing: -0.5px; /* Apple-style tight letter spacing */
 }
 
 .info-button {
@@ -80,9 +109,9 @@
 .switch {
   position: relative;
   display: inline-block;
-  width: 50px;
-  height: 24px;
-  margin-right: 10px;
+  width: 51px;
+  height: 31px;
+  margin-right: 12px;
 }
 
 .switch input {
@@ -98,29 +127,40 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 24px;
+  background-color: rgba(120, 120, 128, 0.16); /* Apple's toggle off color */
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); /* Apple animation curve */
+  border-radius: 31px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07);
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
+  height: 27px;
+  width: 27px;
+  left: 2px;
+  bottom: 2px;
   background-color: white;
-  transition: 0.4s;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 input:checked + .slider {
-  background-color: #1a73e8;
+  background-color: #34c759; /* Apple's green color */
 }
 
 input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(20px);
+}
+
+/* Add scaling animation on toggle */
+.slider:active:before {
+  transform: scale(0.9);
+}
+
+input:checked + .slider:active:before {
+  transform: translateX(20px) scale(0.9);
 }
 
 .toggle-label {
@@ -133,22 +173,27 @@ input:checked + .slider:before {
 }
 
 .toggle-button {
-  background-color: #1a73e8;
+  background-color: #0071e3; /* Apple's blue button color */
   color: #fff;
   border: none;
-  padding: 10px 15px;
+  padding: 12px 18px;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 8px; /* More rounded corners like Apple */
   width: 100%;
   text-align: left;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  transition: all 0.2s ease; /* Smooth hover transition */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
 }
 
 .toggle-button:hover {
-  background-color: #1669c1;
+  background-color: #0077ed; /* Slightly lighter on hover */
+  transform: translateY(-1px); /* Subtle lift effect */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
 }
 
 .search-options {
@@ -280,92 +325,229 @@ input:checked + .slider:before {
 
 .building-name {
   cursor: pointer;
-  padding: 12px 10px;
+  padding: 14px 12px;
   font-weight: 500;
-  border-bottom: 1px solid #e0e0e0;
-  color: #444;
-  transition: background-color 0.2s;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  color: #1d1d1f;
+  transition: all 0.3s ease;
+  border-radius: 10px;
+  margin-bottom: 2px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.building-name:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 0;
+  background-color: #0071e3;
+  transition: height 0.3s ease;
 }
 
 .building-name:hover {
-  background-color: #e9e9e9;
+  background-color: rgba(0, 113, 227, 0.08);
+  padding-left: 16px;
+}
+
+.building-name:hover:before {
+  height: 100%;
+}
+
+.building-name.favorited:before {
+  background-color: #ffb700;
+  height: 100%;
 }
 
 .selected-building .building-name {
-  background-color: #dfe6f0;
-  color: #1a73e8;
+  background-color: rgba(0, 113, 227, 0.15);
+  color: #0071e3;
+  padding-left: 16px;
+  font-weight: 600;
+}
+
+.selected-building .building-name:before {
+  height: 100%;
+}
+
+.building-name-text {
+  flex: 1;
+}
+
+.favorite-button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #c0c0c0;
+  padding: 4px;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+  margin-left: 8px;
+}
+
+.favorite-button:hover {
+  transform: scale(1.2);
+  opacity: 1;
+}
+
+.favorite-button.favorited {
+  color: #ffb700;
+  text-shadow: 0 0 5px rgba(255, 183, 0, 0.4);
+  opacity: 1;
+}
+
+.favorite-button.small {
+  font-size: 14px;
+  padding: 2px;
 }
 
 .classroom-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 5px;
-  border-bottom: 1px solid #f0f0f0;
+  padding: 12px 10px;
+  margin: 6px 0;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s ease;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-left: 0px solid #0071e3;
+  overflow: hidden;
+}
+
+.classroom-item.favorited {
+  border-left: 4px solid #ffb700;
 }
 
 .classroom-item:hover {
-  background-color: #f5f5f5;
+  background-color: #f9f9fc;
+  transform: translateX(3px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+  border-left-width: 4px;
 }
 
 .classroom-name {
   font-size: 14px;
-  color: #555;
+  color: #1d1d1f;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  flex: 1;
+}
+
+.classroom-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.classroom-item:hover .classroom-name {
+  color: #0071e3;
 }
 
 .availability {
-  font-size: 13px;
-  padding: 2px 6px;
-  border-radius: 12px;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 20px;
   text-transform: capitalize;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  transition: all 0.3s ease;
 }
 
 .availability.available {
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
+  background-color: rgba(56, 229, 77, 0.15);
+  color: #38E54D; /* Softer neon green */
+  box-shadow: 0 2px 10px rgba(56, 229, 77, 0.3);
+  text-shadow: 0 0 4px rgba(56, 229, 77, 0.4);
+  font-weight: 600;
 }
 
 .availability.unavailable {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  background-color: rgba(255, 0, 60, 0.15);
+  color: #FF003C; /* Bright neon red */
+  box-shadow: 0 2px 10px rgba(255, 0, 60, 0.3);
+  text-shadow: 0 0 5px rgba(255, 0, 60, 0.5);
+  font-weight: 600;
 }
 
 .availability.no-availability-data,
 .availability.no-data {
-  background-color: rgba(128, 128, 128, 0.1);
-  color: #808080;
+  background-color: #f5f5f7;
+  color: #86868b;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .selected-classroom > .classroom-item {
-  background-color: #e8f0fe;
+  background-color: rgba(0, 113, 227, 0.07);
+  transform: translateX(5px);
+  border-left-width: 4px;
+  box-shadow: 0 3px 8px rgba(0, 113, 227, 0.15);
+}
+
+.selected-classroom > .classroom-item .classroom-name {
+  color: #0071e3;
+  font-weight: 600;
 }
 
 .classroom-schedule {
-  padding: 10px 5px 15px 5px;
-  background-color: #f9fbfd;
-  border-left: 3px solid #1a73e8;
-  margin-bottom: 10px;
+  padding: 16px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  margin: 10px 0 15px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(0);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); /* Apple-style animation curve */
+  animation: slideIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .classroom-schedule h4 {
-  margin: 5px 0 10px 0;
-  font-size: 15px;
-  color: #1a73e8;
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  color: #0071e3;
+  font-weight: 600;
+  letter-spacing: -0.3px;
 }
 
 .classroom-schedule ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .classroom-schedule li {
-  padding: 4px 0;
+  padding: 10px 12px;
   font-size: 13px;
-  color: #555;
-  border-bottom: 1px solid #e0e0e0;
+  color: #1d1d1f;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  background-color: #f9f9fc;
+  margin-bottom: 2px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.classroom-schedule li:hover {
+  background-color: #f5f5f7;
 }
 
 .classroom-schedule li:last-child {
@@ -373,28 +555,119 @@ input:checked + .slider:before {
 }
 
 .classroom-schedule li strong {
-  font-weight: bold;
+  font-weight: 600;
+  color: #0071e3;
 }
 
 .classroom-schedule li em {
   font-style: italic;
+  opacity: 0.8;
 }
 
 .classroom-schedule p {
   font-size: 13px;
-  color: #777;
+  color: #86868b; /* Apple's mid-gray text color */
+  margin: 10px 0 0 0;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
 }
 
 /* New CSS Class for Active Events */
 .classroom-schedule li.active-event {
-  color: red; /* Highlight active events in red */
+  color: #f31260; /* Apple-style red */
+  background-color: rgba(243, 18, 96, 0.05);
+  font-weight: 500;
+  box-shadow: 0 2px 5px rgba(243, 18, 96, 0.1);
+}
+
+/* Global animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideFromRight {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Apply animations to elements */
+.building-list {
+  animation: fadeIn 0.5s ease;
+}
+
+.building-name {
+  animation: slideFromRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: both;
+  animation-delay: calc(var(--animation-order, 0) * 0.05s);
+}
+
+.classroom-item {
+  animation: slideFromRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-fill-mode: both;
+  animation-delay: calc(var(--animation-order, 0) * 0.05s);
 }
 
 @media (max-width: 768px) {
   .sidebar {
     width: 100%;
+    height: 100%;
     border-right: none;
-    border-bottom: 1px solid #ddd;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    overflow-y: auto;
+    background-color: #f5f5f7;
+  }
+  
+  .sidebar-header {
+    margin-bottom: 12px;
+  }
+  
+  .sidebar-title {
+    font-size: 20px;
+  }
+  
+  .project-description {
+    font-size: 12px;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 10px;
+  }
+  
+  .toggle-now, .toggle-search {
+    margin-bottom: 12px;
+  }
+  
+  .building-name {
+    padding: 10px 8px;
+    border-radius: 8px;
+  }
+  
+  .classroom-item {
+    padding: 10px 8px;
+    margin: 5px 0;
+  }
+  
+  .classroom-schedule {
+    padding: 12px;
+    margin: 8px 0 12px 0;
+  }
+  
+  /* Optimize for touch interaction */
+  .building-name, .classroom-item, .toggle-button {
+    min-height: 44px; /* Minimum touch target size */
+  }
+  
+  /* Improve mobile scrolling experience */
+  .sidebar {
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scroll-behavior: smooth;
   }
 }
 

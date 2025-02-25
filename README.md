@@ -113,7 +113,6 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 ## Contact
 
-Andrew Xie  <br>
-Junior CS @ UMD <br>
-Email: andrewxie2004@gmail.com <br>
-LinkedIn: [linkedin.com/in/andrewxie04](https://linkedin.com/in/andrewxie04)
+UMD Campus Map Team <br>
+University of Maryland <br>
+Email: campusmap@umd.edu
