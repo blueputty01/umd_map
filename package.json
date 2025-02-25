@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@atlaskit/datetime-picker": "^15.7.1",
+    "@atlaskit/datetime-picker": "^15.13.1",
     "@atlaskit/form": "^10.5.10",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",

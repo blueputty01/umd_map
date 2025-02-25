@@ -8,15 +8,17 @@
     background-color: #eef2f7;    /* Light background matching the sidebar */
     border: 1px solid #1a73e8;    /* Blue border for consistency with the sidebar */
     padding: 10px;                /* Inner spacing */
-    border-radius: 4px;           /* Rounded corners */
-    font-family: 'Roboto', sans-serif; /* Consistent font with the sidebar */
+    border-radius: 8px;           /* Rounded corners */
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Roboto', sans-serif; /* Match sidebar font */
     font-size: 14px;              /* Font size matching the sidebar */
     color: #555;                  /* Text color consistent with sidebar content */
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
     z-index: 1000;                /* Ensures the legend appears above other map elements */
-    width: 110px;                 /* Fixed width to prevent stretching */
+    width: 130px;                 /* Fixed width to prevent stretching */
     max-height: 80px;             /* Maximum height to prevent vertical stretching */
     overflow: hidden;             /* Hides any overflowing content */
+    backdrop-filter: blur(5px);   /* Adds a frosted glass effect */
+    -webkit-backdrop-filter: blur(5px);
   }
   
   /* Individual legend items */
@@ -43,27 +45,32 @@
   .legend-label {
     font-size: 14px;              /* Font size matching the sidebar */
     color: #555;                  /* Text color consistent with sidebar content */
+    white-space: nowrap;          /* Prevent text wrapping */
   }
   
   /* Responsive adjustments */
   @media (max-width: 768px) {
     .map-legend {
-      top: 10px;
-      right: 10px;
-      padding: 8px;
+      bottom: 15px;
+      right: 15px;
+      padding: 10px;
       font-size: 12px;
-      width: 140px;
+      width: 130px;
       max-height: 70px;
+      background-color: rgba(238, 242, 247, 0.9);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
   
     .color-box {
       width: 12px;
       height: 12px;
-      margin-right: 6px;
+      margin-right: 8px;
     }
   
     .legend-label {
       font-size: 12px;
+      font-weight: 500;
     }
   }
   

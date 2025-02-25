@@ -95,9 +95,25 @@ const Sidebar = ({
   };
 
   const handleClassroomClick = (classroom) => {
-    setSelectedClassroom((prevClassroom) =>
-      prevClassroom && prevClassroom.id === classroom.id ? null : classroom
-    );
+    setSelectedClassroom((prevClassroom) => {
+      const newSelection = prevClassroom && prevClassroom.id === classroom.id ? null : classroom;
+      
+      // If selecting a new classroom, scroll to make it visible after a short delay
+      // to allow for the state update and render
+      if (newSelection) {
+        setTimeout(() => {
+          const roomElement = document.getElementById(`room-${classroom.id}`);
+          if (roomElement) {
+            roomElement.scrollIntoView({
+              behavior: "smooth", 
+              block: "nearest"
+            });
+          }
+        }, 100);
+      }
+      
+      return newSelection;
+    });
   };
 
   // Compute the schedule for the selected classroom and date
@@ -619,6 +635,7 @@ const Sidebar = ({
                         className={
                           isSelectedClassroom ? "selected-classroom" : ""
                         }
+                        id={`room-${room.id}`}
                       >
                         <div className={`classroom-item ${isRoomFavorite(room.id) ? 'favorited' : ''}`}>
                           <div className="classroom-name">{room.name}</div>
@@ -671,7 +688,7 @@ const Sidebar = ({
                                         
                                         // Check if room number starts with 0
                                         if (roomNumber.startsWith('0')) {
-                                          return 'Basement';
+                                          return 'Ground Floor';
                                         }
                                         
                                         // Otherwise return first digit of room number
