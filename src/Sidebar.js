@@ -95,25 +95,9 @@ const Sidebar = ({
   };
 
   const handleClassroomClick = (classroom) => {
-    setSelectedClassroom((prevClassroom) => {
-      const newSelection = prevClassroom && prevClassroom.id === classroom.id ? null : classroom;
-      
-      // If selecting a new classroom, scroll to make it visible after a short delay
-      // to allow for the state update and render
-      if (newSelection) {
-        setTimeout(() => {
-          const roomElement = document.getElementById(`room-${classroom.id}`);
-          if (roomElement) {
-            roomElement.scrollIntoView({
-              behavior: "smooth", 
-              block: "nearest"
-            });
-          }
-        }, 100);
-      }
-      
-      return newSelection;
-    });
+    setSelectedClassroom((prevClassroom) =>
+      prevClassroom && prevClassroom.id === classroom.id ? null : classroom
+    );
   };
 
   // Compute the schedule for the selected classroom and date
