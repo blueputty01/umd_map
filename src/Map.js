@@ -111,12 +111,13 @@ const Map = ({
               });
 
               if (onBuildingSelect) {
+                // Call with an explicit true flag to indicate this came from map
                 onBuildingSelect({
                   name: buildingProperties.name,
                   code: buildingProperties.code,
                   longitude: clickedFeature.geometry.coordinates[0],
                   latitude: clickedFeature.geometry.coordinates[1],
-                });
+                }, true); // Pass true as second parameter to indicate map selection
               }
             }
           });
@@ -281,7 +282,7 @@ const Map = ({
   };
 
   return (
-    <div className="map-wrapper">
+    <div className={`map-wrapper ${darkMode ? 'dark-mode' : ''}`}>
       <div className="map-inner-container" ref={mapContainerRef} />
       {/* Recenter Button */}
       <button

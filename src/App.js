@@ -12,6 +12,7 @@ const App = () => {
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [showMap, setShowMap] = useState(true); // New state variable for toggling map
   const [darkMode, setDarkMode] = useState(false); // State for dark mode toggle
+  const [mapSelectionMode, setMapSelectionMode] = useState(false); // Track if selection came from map
   
   // Favorites system
   const [favoriteBuildings, setFavoriteBuildings] = useState(() => {
@@ -26,8 +27,12 @@ const App = () => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const handleBuildingSelect = useCallback((building) => {
+  const handleBuildingSelect = useCallback((building, fromMap = false) => {
+    console.log(`Building selected: ${building?.name || 'none'}, fromMap: ${fromMap}`);
+    
+    // Set both the building and whether selection came from map
     setSelectedBuilding(building);
+    setMapSelectionMode(fromMap);
   }, []);
 
   // Adjusted handlers to accept functional updates
@@ -135,6 +140,7 @@ const App = () => {
         favoriteRooms={favoriteRooms}
         toggleFavoriteBuilding={toggleFavoriteBuilding}
         toggleFavoriteRoom={toggleFavoriteRoom}
+        mapSelectionMode={mapSelectionMode}
       />
       {showMap && (
         <div className="map-container">

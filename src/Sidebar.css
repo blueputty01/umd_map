@@ -14,6 +14,96 @@
   transition: all 0.3s ease; /* Smooth transition for all changes */
 }
 
+/* Global focused building mode styles - applies to BOTH mobile and desktop */
+.sidebar.focused-building-mode {
+  position: relative;
+}
+
+.sidebar.focused-building-mode .sidebar-header {
+  position: sticky;
+  top: 0;
+  background-color: #f5f5f7;
+  z-index: 10;
+  padding: 10px 15px; /* Reduced top/bottom padding */
+  margin: -20px -20px 0 -20px; /* Compensate for the padding in sidebar */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Desktop-only shadow under the header */
+@media (min-width: 769px) {
+  .sidebar.focused-building-mode .sidebar-header:after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.03), transparent);
+    pointer-events: none;
+  }
+}
+
+/* Dark mode styles for focused building header */
+.sidebar.dark-mode.focused-building-mode .sidebar-header {
+  background-color: #1a1a1a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+
+/* Dark mode for the after element (desktop only) */
+@media (min-width: 769px) {
+  .sidebar.dark-mode.focused-building-mode .sidebar-header:after {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.03), transparent);
+  }
+}
+
+/* Desktop specific padding for focused mode */
+@media (min-width: 769px) {
+  .sidebar.focused-building-mode .building-list {
+    margin-top: 25px; /* More space between the header and the building on desktop */
+    padding-top: 15px; /* Additional padding for desktop */
+    border-top: 1px solid rgba(0, 0, 0, 0.05); /* Subtle separator line */
+    position: relative; /* For pseudo-element positioning */
+  }
+  
+  /* Add highlight to the top of the list for better visual separation */
+  .sidebar.focused-building-mode .building-list:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+  
+  /* Dark mode separator */
+  .sidebar.dark-mode.focused-building-mode .building-list {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .sidebar.dark-mode.focused-building-mode .building-list:before {
+    background-color: rgba(40, 40, 40, 0.8);
+  }
+}
+
+/* Default/mobile padding for focused mode */
+.sidebar.focused-building-mode .building-list {
+  margin-top: 15px; /* Moderate space between the header and the building */
+  padding-top: 5px; /* Smaller padding for separation */
+}
+
+/* Hide everything except the selected building in focus mode */
+.sidebar.focused-building-mode .building-list > li:not(.selected-building) {
+  display: none;
+}
+
 .sidebar-header {
   display: flex;
   align-items: center;
@@ -919,44 +1009,23 @@ input:checked + .slider:active:before {
     width: 100%;
     height: 100%;
     border-right: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: none; /* Remove the top border to eliminate the gap */
     padding: 15px;
+    padding-top: 0; /* Remove top padding to prevent cutoff issues */
     overflow-y: auto;
     background-color: #f5f5f7;
+    scroll-behavior: auto; /* Use instant scrolling on mobile */
+    margin-top: 0; /* Ensure no top margin */
   }
   
-  .sidebar-header {
-    margin-bottom: 12px;
+  /* Ensure focused mode header has proper spacing on mobile */
+  .sidebar.focused-building-mode {
+    padding-top: 0; /* Remove padding to let the header control spacing */
   }
   
-  .sidebar-title {
-    font-size: 20px;
-  }
-  
-  .project-description {
-    font-size: 12px;
-    padding: 10px;
-    margin-bottom: 12px;
-    border-radius: 10px;
-  }
-  
-  .toggle-now, .toggle-search {
-    margin-bottom: 12px;
-  }
-  
-  .building-name {
-    padding: 10px 8px;
-    border-radius: 8px;
-  }
-  
-  .classroom-item {
-    padding: 10px 8px;
-    margin: 5px 0;
-  }
-  
-  .classroom-schedule {
-    padding: 12px;
-    margin: 8px 0 12px 0;
+  /* Ensure dark mode sidebar also has no gap */
+  .dark-mode.sidebar {
+    border-top: none;
   }
   
   /* Fix scrolling issues when expanding items */
@@ -990,6 +1059,48 @@ input:checked + .slider:active:before {
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
     scroll-behavior: smooth;
   }
+}
+
+/* Back button for focused building mode */
+.back-button {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0071e3;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 10px;
+  background-color: rgba(0, 113, 227, 0.08);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: rgba(0, 113, 227, 0.12);
+}
+
+/* Dark mode back button */
+.sidebar.dark-mode .back-button {
+  color: #3694ff;
+  background-color: rgba(54, 148, 255, 0.1);
+}
+
+.sidebar.dark-mode .back-button:hover {
+  background-color: rgba(54, 148, 255, 0.2);
+}
+
+/* Animation for entering focused mode */
+@keyframes focusIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sidebar.focused-building-mode .selected-building {
+  animation: focusIn 0.3s ease forwards;
 }
 
 .toggle-map {

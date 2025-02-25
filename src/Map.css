@@ -29,6 +29,14 @@
     border: 1px solid rgba(0, 0, 0, 0.03);
   }
   
+  /* Dark mode legend */
+  .dark-mode .map-legend {
+    background-color: rgba(30, 30, 30, 0.85); /* Dark semi-transparent background */
+    color: #f5f5f7; /* Light text for dark mode */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  }
+  
   .map-legend:hover {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
@@ -102,6 +110,18 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   }
   
+  /* Dark mode recenter button */
+  .dark-mode .map-recenter-button {
+    background-color: rgba(40, 40, 40, 0.9); /* Dark semi-transparent background */
+    color: #f5f5f7; /* Light text for dark mode */
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4); /* Stronger shadow for dark mode */
+  }
+  
+  .dark-mode .map-recenter-button:hover {
+    background-color: rgba(50, 50, 50, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  }
+  
   /* Optional: Adjust the position of the Mapbox default controls to make space for the recenter button */
   .mapboxgl-ctrl-top-right {
     display: flex;
@@ -156,6 +176,12 @@
       position: relative;
       top: 0;
       right: 0;
+    }
+    
+    /* Adjust dark mode mobile attribution */
+    .dark-mode .mapboxgl-ctrl-top-right .mapboxgl-ctrl-attrib {
+      background-color: rgba(40, 40, 40, 0.7);
+      color: #e0e0e0;
     }
     
     /* Hide the attribution toggle button on mobile */

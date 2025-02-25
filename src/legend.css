@@ -19,6 +19,20 @@
     overflow: hidden;             /* Hides any overflowing content */
     backdrop-filter: blur(5px);   /* Adds a frosted glass effect */
     -webkit-backdrop-filter: blur(5px);
+    transition: all 0.3s ease;    /* Smooth transition for dark mode */
+  }
+  
+  /* Dark mode styles for the legend */
+  .dark-mode .map-legend {
+    background-color: rgba(30, 30, 30, 0.9);  /* Dark background */
+    border: 1px solid rgba(54, 148, 255, 0.4); /* Blue border for dark mode */
+    color: #ffffff;               /* White text for dark mode */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); /* Stronger shadow for dark mode */
+  }
+  
+  /* Make legend label white in dark mode */
+  .dark-mode .legend-label {
+    color: #ffffff;
   }
   
   /* Individual legend items */

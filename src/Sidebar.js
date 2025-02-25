@@ -33,6 +33,7 @@ const Sidebar = ({
   favoriteRooms,
   toggleFavoriteBuilding,
   toggleFavoriteRoom,
+  mapSelectionMode, // New prop that indicates if building was selected from map
 }) => {
   const [buildings, setBuildings] = useState([]);
   const [expandedBuilding, setExpandedBuilding] = useState(null);
@@ -62,35 +63,85 @@ const Sidebar = ({
   }, []);
 
   // Update expanded building when selectedBuilding or isNow changes
+  // Create a ref for the sidebar container
+  const sidebarRef = useRef(null);
+  
   useEffect(() => {
     if (selectedBuilding) {
       const matchingBuilding = buildings.find(
         (b) => b.code === selectedBuilding.code
       );
+      
+      // Always expand the building, whether selected via map or sidebar
       setExpandedBuilding(matchingBuilding);
+      
+      // Reset flag after processing
+      window.mapSelectionInProgress = false;
+      
       setSelectedClassroom(null); // Reset selected classroom when building changes
 
-      // Scroll the building into view
-      if (buildingRefs.current[selectedBuilding.code]) {
-        buildingRefs.current[selectedBuilding.code].scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
+      // Scroll the building into view within the sidebar container
+      if (buildingRefs.current[selectedBuilding.code] && sidebarRef.current) {
+        // This scrolls within the sidebar element rather than the whole page
+        const sidebarContainer = sidebarRef.current;
+        const buildingElement = buildingRefs.current[selectedBuilding.code];
+        
+        // MOBILE-SPECIFIC SOLUTION - Final approach
+        if (window.innerWidth <= 768) {
+          // Just reset the scroll to the top of the sidebar
+          // This places all buildings at the start of the list
+          sidebarContainer.scrollTop = 0;
+          
+          // Add highlighting to make it easier to find the selected building
+          const highlightClass = 'mobile-scroll-highlight';
+          
+          // Remove any existing highlights
+          const existingHighlights = document.getElementsByClassName(highlightClass);
+          while (existingHighlights.length > 0) {
+            existingHighlights[0].classList.remove(highlightClass);
+          }
+          
+          // Add the highlight class to this building
+          buildingElement.classList.add(highlightClass);
+          
+          // Remove the highlight after a delay
+          setTimeout(() => {
+            buildingElement.classList.remove(highlightClass);
+          }, 2000); // Remove after 2 seconds
+        } 
+        // DESKTOP SOLUTION
+        else {
+          // Calculate position for scroll
+          const buildingTop = buildingElement.offsetTop;
+          
+          // Desktop scrolling behavior
+          sidebarContainer.scrollTo({
+            top: Math.max(0, buildingTop - 80),
+            behavior: "smooth"
+          });
+        }
       }
     } else {
       setExpandedBuilding(null);
       setSelectedClassroom(null);
+      // No mapSelectedBuilding state anymore
     }
   }, [selectedBuilding, buildings, isNow]);
 
   const handleBuildingClick = (building) => {
+    console.log("Building clicked in sidebar");
+    
+    // Always exit focused mode when clicking in the sidebar
+    setFocusedBuildingMode(false);
+    
     setExpandedBuilding((prevBuilding) =>
       prevBuilding && prevBuilding.code === building.code ? null : building
     );
     setSelectedClassroom(null); // Reset selected classroom when collapsing/expanding building
 
     if (onBuildingSelect) {
-      onBuildingSelect(building);
+      // Pass false to indicate this is NOT a map selection
+      onBuildingSelect(building, false);
     }
   };
 
@@ -379,65 +430,107 @@ const Sidebar = ({
     setShowFavorites(prev => !prev);
   };
 
+  // State to track if we're in focused building mode (for mobile)
+  const [focusedBuildingMode, setFocusedBuildingMode] = useState(false);
+  
+  // Use the mapSelectionMode prop to control focused mode
+  useEffect(() => {
+    console.log("Building selected, mapSelectionMode:", mapSelectionMode);
+    
+    // When a building is selected from the map, enter focused mode
+    if (selectedBuilding && mapSelectionMode) {
+      console.log("Activating focused mode from map selection!");
+      setFocusedBuildingMode(true);
+    } else if (selectedBuilding && !mapSelectionMode) {
+      // Direct click in sidebar - ensure focus mode is off
+      console.log("Regular selection - no focus mode");
+      setFocusedBuildingMode(false);
+    }
+    
+    // Reset focus mode when building is deselected
+    if (!selectedBuilding) {
+      setFocusedBuildingMode(false);
+    }
+  }, [selectedBuilding, mapSelectionMode]);
+  
+  // Handler to exit focused building mode
+  const handleExitFocusMode = () => {
+    setFocusedBuildingMode(false);
+    onBuildingSelect(null, false); // Deselect the building, not from map
+  };
+  
   return (
-    <div className={`sidebar ${darkMode ? 'dark-mode' : ''}`}>
+    <div ref={sidebarRef} className={`sidebar ${darkMode ? 'dark-mode' : ''} ${focusedBuildingMode ? 'focused-building-mode' : ''}`}>
       <div className="sidebar-header">
-        <h2 className="sidebar-title">Rooms</h2>
-        <div className="header-controls">
-          <button
-            className={`favorites-toggle ${showFavorites ? 'active' : ''}`}
-            onClick={toggleFavoritesMode}
-            title={showFavorites ? "Show all rooms" : "Show favorites"}
-            aria-label={showFavorites ? "Show all rooms" : "Show favorites"}
-          >
-            {showFavorites ? '📋' : '⭐'}
-          </button>
-          <button
-            className="dark-mode-toggle"
-            onClick={toggleDarkMode}
-            title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-            aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-          >
-            {darkMode ? '☀️' : '🌙'}
-          </button>
-          <button
-            className="info-button"
-            onClick={toggleDescription}
-            aria-label="Project Description"
-          >
-            ⓘ
-          </button>
-        </div>
-      </div>
-      
-      {/* Search Bar */}
-      <div className="search-container">
-        <div className="search-input-wrapper">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search buildings or rooms..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          {searchQuery && (
-            <button 
-              className="clear-search" 
-              onClick={() => setSearchQuery('')}
-              aria-label="Clear search"
-            >
-              ✕
+        {focusedBuildingMode ? (
+          <>
+            <button className="back-button" onClick={handleExitFocusMode}>
+              ← Back to Building List
             </button>
-          )}
-        </div>
-        {searchQuery && (
-          <div className="search-stats">
-            Found {filteredBuildings.length} buildings
-          </div>
+            <h2 className="sidebar-title">{selectedBuilding?.name || 'Building'}</h2>
+          </>
+        ) : (
+          <>
+            <h2 className="sidebar-title">Rooms</h2>
+            <div className="header-controls">
+              <button
+                className={`favorites-toggle ${showFavorites ? 'active' : ''}`}
+                onClick={toggleFavoritesMode}
+                title={showFavorites ? "Show all rooms" : "Show favorites"}
+                aria-label={showFavorites ? "Show all rooms" : "Show favorites"}
+              >
+                {showFavorites ? '📋' : '⭐'}
+              </button>
+              <button
+                className="dark-mode-toggle"
+                onClick={toggleDarkMode}
+                title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+                aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {darkMode ? '☀️' : '🌙'}
+              </button>
+              <button
+                className="info-button"
+                onClick={toggleDescription}
+                aria-label="Project Description"
+              >
+                ⓘ
+              </button>
+            </div>
+          </>
         )}
       </div>
+      
+      {/* Search Bar - only show when not in focused mode */}
+      {!focusedBuildingMode && (
+        <div className="search-container">
+          <div className="search-input-wrapper">
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search buildings or rooms..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button 
+                className="clear-search" 
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          {searchQuery && (
+            <div className="search-stats">
+              Found {filteredBuildings.length} buildings
+            </div>
+          )}
+        </div>
+      )}
 
-      {showDescription && (
+      {!focusedBuildingMode && showDescription && (
         <div className="project-description">
           {/* Project description content */}
           <h3>Project Description</h3>
@@ -475,46 +568,51 @@ const Sidebar = ({
         </div>
       )}
 
-      {/* Toggle Switch for "Now" vs. Custom Time */}
-      <div className="toggle-now">
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={!isNow}
-            onChange={handleToggleChange}
-          />
-          <span className="slider round"></span>
-        </label>
-        <span className="toggle-label">
-          {isNow ? "Now" : "Select Date and Time Range"}
-        </span>
-      </div>
-
-      {/* Toggle Switch for Map View */}
-      <div className="toggle-map">
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={showMap}
-            onChange={() => setShowMap((prev) => !prev)}
-          />
-          <span className="slider round"></span>
-        </label>
-        <span className="toggle-label">
-          {showMap ? "Map View On" : "Map View Off"}
-        </span>
-      </div>
-
-      {/* Toggle Button for Search Options */}
-      {!isNow && (
-        <div className="toggle-search">
-          <button className="toggle-button" onClick={toggleSearchOptions}>
-            {showSearchOptions ? "Hide Search Options" : "Show Search Options"}
-            <span style={{ marginLeft: "10px" }}>
-              {showSearchOptions ? "▲" : "▼"}
+      {/* Hide controls in focused mode */}
+      {!focusedBuildingMode && (
+        <>
+          {/* Toggle Switch for "Now" vs. Custom Time */}
+          <div className="toggle-now">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={!isNow}
+                onChange={handleToggleChange}
+              />
+              <span className="slider round"></span>
+            </label>
+            <span className="toggle-label">
+              {isNow ? "Now" : "Select Date and Time Range"}
             </span>
-          </button>
-        </div>
+          </div>
+
+          {/* Toggle Switch for Map View */}
+          <div className="toggle-map">
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={showMap}
+                onChange={() => setShowMap((prev) => !prev)}
+              />
+              <span className="slider round"></span>
+            </label>
+            <span className="toggle-label">
+              {showMap ? "Map View On" : "Map View Off"}
+            </span>
+          </div>
+
+          {/* Toggle Button for Search Options */}
+          {!isNow && (
+            <div className="toggle-search">
+              <button className="toggle-button" onClick={toggleSearchOptions}>
+                {showSearchOptions ? "Hide Search Options" : "Show Search Options"}
+                <span style={{ marginLeft: "10px" }}>
+                  {showSearchOptions ? "▲" : "▼"}
+                </span>
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Search Options Section */}
@@ -839,6 +937,7 @@ Sidebar.propTypes = {
   favoriteRooms: PropTypes.array,
   toggleFavoriteBuilding: PropTypes.func,
   toggleFavoriteRoom: PropTypes.func,
+  mapSelectionMode: PropTypes.bool, // Whether the selection came from the map
 };
 
 export default Sidebar;
