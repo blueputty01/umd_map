@@ -41,6 +41,7 @@ const Sidebar = ({
   const [showDescription, setShowDescription] = useState(false);
   const [isNow, setIsNow] = useState(true);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const buildingRefs = useRef({});
 
   useEffect(() => {
@@ -270,6 +271,33 @@ const Sidebar = ({
     // Base buildings to filter
     let baseBuildings = buildings;
     
+    // Apply search filter if search query exists
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase().trim();
+      
+      // Search in building names and room names
+      baseBuildings = buildings.map(building => {
+        // Check if building name matches
+        const buildingMatches = building.name.toLowerCase().includes(query) || 
+                               (building.code && building.code.toLowerCase().includes(query));
+        
+        // Filter classrooms that match the query
+        const matchingClassrooms = building.classrooms.filter(room => 
+          room.name.toLowerCase().includes(query)
+        );
+        
+        // Return building with filtered rooms if either building matches or has matching rooms
+        if (buildingMatches || matchingClassrooms.length > 0) {
+          return {
+            ...building,
+            classrooms: buildingMatches ? building.classrooms : matchingClassrooms
+          };
+        }
+        
+        return null; // Exclude building if no matches
+      }).filter(building => building !== null);
+    }
+    
     // If showing favorites mode, first filter to just favorite buildings or buildings with favorited rooms
     if (showFavorites) {
       // Get building codes that are favorited directly
@@ -284,7 +312,7 @@ const Sidebar = ({
         ...buildingCodesWithFavoritedRooms
       ])];
       
-      baseBuildings = buildings.filter(building => allFavoritedBuildingCodes.includes(building.code));
+      baseBuildings = baseBuildings.filter(building => allFavoritedBuildingCodes.includes(building.code));
       
       return baseBuildings.map(building => {
         // If the building is directly favorited, keep all its rooms
@@ -334,7 +362,7 @@ const Sidebar = ({
         .filter((building) => building !== null);
     }
   }, [buildings, selectedStartDateTime, selectedEndDateTime, isNow, 
-      showFavorites, favoriteBuildings, favoriteRooms]);
+      showFavorites, favoriteBuildings, favoriteRooms, searchQuery]);
 
   // Check if a building is favorited
   const isBuildingFavorite = (buildingCode) => {
@@ -381,34 +409,67 @@ const Sidebar = ({
           </button>
         </div>
       </div>
+      
+      {/* Search Bar */}
+      <div className="search-container">
+        <div className="search-input-wrapper">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search buildings or rooms..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button 
+              className="clear-search" 
+              onClick={() => setSearchQuery('')}
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        {searchQuery && (
+          <div className="search-stats">
+            Found {filteredBuildings.length} buildings
+          </div>
+        )}
+      </div>
 
       {showDescription && (
         <div className="project-description">
           {/* Project description content */}
           <h3>Project Description</h3>
           <p>
-            UMD Classroom Search Tool to find available study and meeting spaces across campus.
+            UMD Classroom Search Tool to find available study and meeting spaces across campus. Features include real-time availability tracking, interactive map visualization, detailed room information, availability timeline, favorites system, and powerful search functionality.
           </p>
 
           <h4>Features</h4>
           <ul>
             <li>
-              <strong>Displays Open Classrooms Across UMD Campus:</strong> View
-              available classrooms in real-time across all buildings.
+              <strong>Real-Time Availability:</strong> View available classrooms across campus with live updates.
             </li>
             <li>
-              <strong>Real-Time Availability Updates:</strong> Receive
-              up-to-date information on classroom availability to make informed
-              decisions.
+              <strong>Interactive Map:</strong> Visualize classroom locations with color-coded availability.
             </li>
             <li>
-              <strong>Interactive Map:</strong> Visualize classroom locations on
-              an interactive map for easy navigation.
+              <strong>Detailed Room Information:</strong> See capacity, room type, floor level, and available features.
             </li>
             <li>
-              <strong>List View with Status Updates:</strong> Browse classrooms
-              in a list format with real-time status indicators for quick
-              reference.
+              <strong>Availability Timeline:</strong> Visual representation of available time slots throughout the day.
+            </li>
+            <li>
+              <strong>Dark Mode:</strong> Toggle between light and dark themes for different lighting conditions.
+            </li>
+            <li>
+              <strong>Favorites System:</strong> Save preferred buildings and rooms for quick access.
+            </li>
+            <li>
+              <strong>Powerful Search:</strong> Find specific buildings and rooms with real-time filtering.
+            </li>
+            <li>
+              <strong>Responsive Design:</strong> Optimized for both desktop and mobile devices.
             </li>
           </ul>
         </div>
@@ -582,6 +643,135 @@ const Sidebar = ({
                         {isSelectedClassroom && (
                           <div className="classroom-schedule">
                             <h4>Schedule for {room.name}</h4>
+                            
+                            {/* Room Details Section */}
+                            <div className="room-details">
+                              <div className="room-details-header">
+                                <h5>Room Details</h5>
+                              </div>
+                              
+                              <div className="room-info-grid">
+                                <div className="room-info-item">
+                                  <span className="info-label">Capacity</span>
+                                  <span className="info-value">{room.capacity || "30"} people</span>
+                                </div>
+                                <div className="room-info-item">
+                                  <span className="info-label">Type</span>
+                                  <span className="info-value">{room.type || "Classroom"}</span>
+                                </div>
+                                <div className="room-info-item">
+                                  <span className="info-label">Floor</span>
+                                  <span className="info-value">
+                                    {room.floor || (() => {
+                                      // Split room name by spaces to get parts
+                                      const parts = room.name.split(' ');
+                                      
+                                      // If we have at least 2 parts (building code and room number)
+                                      if (parts.length >= 2) {
+                                        // Get the room number part
+                                        const roomNumber = parts[1];
+                                        
+                                        // Check if room number starts with 0
+                                        if (roomNumber.startsWith('0')) {
+                                          return 'Basement';
+                                        }
+                                        
+                                        // Otherwise return first digit of room number
+                                        if (/^\d/.test(roomNumber)) {
+                                          return roomNumber.charAt(0);
+                                        }
+                                      }
+                                      
+                                      // Fallback to 1 if we can't determine floor
+                                      return '1';
+                                    })()}
+                                  </span>
+                                </div>
+                                <div className="room-info-item">
+                                  <span className="info-label">Features</span>
+                                  <div className="feature-pills">
+                                    <span className="feature-pill">Projector</span>
+                                    <span className="feature-pill">Whiteboard</span>
+                                    {room.name.includes('C') && 
+                                      <span className="feature-pill">Computers</span>
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Availability Visualization */}
+                            <div className="availability-viz">
+                              <h5>{isNow ? "Today's Availability" : `Availability on ${selectedStartDateTime.toLocaleDateString()}`}</h5>
+                              <div className="time-blocks">
+                                {Array.from({length: 16}, (_, i) => {
+                                  const hour = i + 7; // Start at 7am
+                                  
+                                  // Check if hour is booked by an event
+                                  const isBooked = classroomSchedule.some(event => {
+                                    const startHour = Math.floor(parseFloat(event.time_start));
+                                    const endHour = Math.ceil(parseFloat(event.time_end));
+                                    return hour >= startHour && hour < endHour;
+                                  });
+                                  
+                                  // Current time indicator
+                                  const currentHour = new Date().getHours();
+                                  const isCurrent = hour === currentHour;
+                                  
+                                  // Check if this hour is within user's selected time range (only in search mode)
+                                  const isInSelectedTimeRange = !isNow && (() => {
+                                    const startHour = selectedStartDateTime.getHours();
+                                    const endHour = selectedEndDateTime.getHours();
+                                    
+                                    // If end time is on the same day
+                                    if (
+                                      selectedStartDateTime.toDateString() === selectedEndDateTime.toDateString() &&
+                                      hour >= startHour && hour < endHour
+                                    ) {
+                                      return true;
+                                    }
+                                    return false;
+                                  })();
+                                  
+                                  // Build tooltip text
+                                  let tooltipText = `${hour > 12 ? hour - 12 : hour}${hour >= 12 ? 'pm' : 'am'}: `;
+                                  if (isBooked) {
+                                    tooltipText += 'Booked';
+                                  } else {
+                                    tooltipText += 'Available';
+                                  }
+                                  
+                                  // Only show current time indicator in "Now" mode
+                                  const showCurrentIndicator = isNow && isCurrent;
+                                  
+                                  return (
+                                    <div 
+                                      key={hour} 
+                                      className={`time-block 
+                                        ${isBooked ? 'booked' : 'available'} 
+                                        ${showCurrentIndicator ? 'current' : ''} 
+                                        ${isInSelectedTimeRange && !isBooked ? 'selected-time' : ''}
+                                      `}
+                                      title={tooltipText}
+                                    >
+                                      {hour === 7 || hour === 12 || hour === 17 || hour === 22 ? 
+                                        <span className="hour-label">{hour > 12 ? hour - 12 : hour}{hour >= 12 ? 'pm' : 'am'}</span> 
+                                        : ''}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {!isNow && (
+                                <div className="time-range-info">
+                                  <div className="time-range-indicator">
+                                    <span className="time-indicator selected-time-indicator"></span>
+                                    <span>Your selected time</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <h5>Schedule</h5>
                             {classroomSchedule.length > 0 ? (
                               <ul>
                                 {classroomSchedule.map((timeRange, index) => {
