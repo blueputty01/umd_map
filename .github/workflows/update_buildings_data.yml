@@ -8,29 +8,26 @@ on:
 jobs:
   update-and-push:
     runs-on: ubuntu-latest
-
+    env: 
+      root: .github/api
     steps:
-      # Step 1: Checkout UMD_api Repository
-      - name: Checkout UMD_api Repository
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      # Step 2: Set Up Python Environment
       - name: Set Up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'  # Specify your Python version
+          python-version: '3.9'
 
-      # Step 3: Install Dependencies
-      - name: Set up environnment
+      - name: Set up environment
         run: |
-          cd .github/api
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r ${{ env.root }}/requirements.txt
 
-      # Step 4: Run the Python Script to generate buildings_data.json
       - name: Run Fetch Availability Script
         run: |
-          python fetch_availability.py
+          ls
+          python ${{ env.root }}/fetch_availability.py
 
       # Step 5: Validate buildings_data.json
       - name: Validate buildings_data.json
