@@ -1,0 +1,51 @@
+name: Weekly Update of buildings_data.json to umd_map
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Runs every Monday at 00:00 UTC
+  workflow_dispatch:      # Allows manual triggering
+
+jobs:
+  update-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout UMD_api Repository
+      - name: Checkout UMD_api Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set Up Python Environment
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # Specify your Python version
+
+      # Step 3: Install Dependencies
+      - name: Set up environnment
+        run: |
+          cd .github/api
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Step 4: Run the Python Script to generate buildings_data.json
+      - name: Run Fetch Availability Script
+        run: |
+          python fetch_availability.py
+
+      # Step 5: Validate buildings_data.json
+      - name: Validate buildings_data.json
+        run: |
+          python -m json.tool buildings_data.json > /dev/null
+
+      - name: Move buildings_data.json
+        run: |
+          mv buildings_data.json public/buildings_data.json  # Adjust the destination path if different
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add public/buildings_data.json
+          git commit -m "Weekly update of buildings_data.json [skip ci]"
+          git push origin main
