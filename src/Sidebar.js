@@ -1,12 +1,12 @@
 // src/Sidebar.js
 
 // React imports
-import React, { 
-  useEffect, 
-  useState, 
-  useRef, 
-  useMemo, 
-  useCallback 
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  useCallback
 } from "react";
 import "./Sidebar.css"; // Styles for the sidebar
 import { getClassroomAvailability } from "./availability";
@@ -65,62 +65,62 @@ const Sidebar = ({
   // Update expanded building when selectedBuilding or isNow changes
   // Create a ref for the sidebar container
   const sidebarRef = useRef(null);
-  
+
   useEffect(() => {
     if (selectedBuilding) {
       const matchingBuilding = buildings.find(
         (b) => b.code === selectedBuilding.code
       );
-      
+
       // Always expand the building, whether selected via map or sidebar
       setExpandedBuilding(matchingBuilding);
-      
+
       // Reset flag after processing
       window.mapSelectionInProgress = false;
-      
+
       setSelectedClassroom(null); // Reset selected classroom when building changes
 
       // Scroll the building into view within the sidebar container
-      if (buildingRefs.current[selectedBuilding.code] && sidebarRef.current) {
-        // This scrolls within the sidebar element rather than the whole page
-        const sidebarContainer = sidebarRef.current;
-        const buildingElement = buildingRefs.current[selectedBuilding.code];
-        
-        // MOBILE-SPECIFIC SOLUTION - Final approach
-        if (window.innerWidth <= 768) {
-          // Just reset the scroll to the top of the sidebar
-          // This places all buildings at the start of the list
-          sidebarContainer.scrollTop = 0;
-          
-          // Add highlighting to make it easier to find the selected building
-          const highlightClass = 'mobile-scroll-highlight';
-          
-          // Remove any existing highlights
-          const existingHighlights = document.getElementsByClassName(highlightClass);
-          while (existingHighlights.length > 0) {
-            existingHighlights[0].classList.remove(highlightClass);
-          }
-          
-          // Add the highlight class to this building
-          buildingElement.classList.add(highlightClass);
-          
-          // Remove the highlight after a delay
-          setTimeout(() => {
-            buildingElement.classList.remove(highlightClass);
-          }, 2000); // Remove after 2 seconds
-        } 
-        // DESKTOP SOLUTION
-        else {
-          // Calculate position for scroll
-          const buildingTop = buildingElement.offsetTop;
-          
-          // Desktop scrolling behavior
-          sidebarContainer.scrollTo({
-            top: Math.max(0, buildingTop - 80),
-            behavior: "smooth"
-          });
-        }
-      }
+      // if (buildingRefs.current[selectedBuilding.code] && sidebarRef.current) {
+      //   // This scrolls within the sidebar element rather than the whole page
+      //   const sidebarContainer = sidebarRef.current;
+      //   const buildingElement = buildingRefs.current[selectedBuilding.code];
+      //
+      //   // MOBILE-SPECIFIC SOLUTION - Final approach
+      //   if (window.innerWidth <= 768) {
+      //     // Just reset the scroll to the top of the sidebar
+      //     // This places all buildings at the start of the list
+      //     sidebarContainer.scrollTop = 0;
+      //
+      //     // Add highlighting to make it easier to find the selected building
+      //     const highlightClass = 'mobile-scroll-highlight';
+      //
+      //     // Remove any existing highlights
+      //     const existingHighlights = document.getElementsByClassName(highlightClass);
+      //     while (existingHighlights.length > 0) {
+      //       existingHighlights[0].classList.remove(highlightClass);
+      //     }
+      //
+      //     // Add the highlight class to this building
+      //     buildingElement.classList.add(highlightClass);
+      //
+      //     // Remove the highlight after a delay
+      //     setTimeout(() => {
+      //       buildingElement.classList.remove(highlightClass);
+      //     }, 2000); // Remove after 2 seconds
+      //   }
+      //   // DESKTOP SOLUTION
+      //   else {
+      //     // Calculate position for scroll
+      //     const buildingTop = buildingElement.offsetTop;
+      //
+      //     // Desktop scrolling behavior
+      //     sidebarContainer.scrollTo({
+      //       top: Math.max(0, buildingTop - 80),
+      //       behavior: "smooth"
+      //     });
+      //   }
+      // }
     } else {
       setExpandedBuilding(null);
       setSelectedClassroom(null);
@@ -130,10 +130,10 @@ const Sidebar = ({
 
   const handleBuildingClick = (building) => {
     console.log("Building clicked in sidebar");
-    
+
     // Always exit focused mode when clicking in the sidebar
     setFocusedBuildingMode(false);
-    
+
     setExpandedBuilding((prevBuilding) =>
       prevBuilding && prevBuilding.code === building.code ? null : building
     );
@@ -321,22 +321,22 @@ const Sidebar = ({
   const filteredBuildings = useMemo(() => {
     // Base buildings to filter
     let baseBuildings = buildings;
-    
+
     // Apply search filter if search query exists
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase().trim();
-      
+
       // Search in building names and room names
       baseBuildings = buildings.map(building => {
         // Check if building name matches
-        const buildingMatches = building.name.toLowerCase().includes(query) || 
-                               (building.code && building.code.toLowerCase().includes(query));
-        
+        const buildingMatches = building.name.toLowerCase().includes(query) ||
+          (building.code && building.code.toLowerCase().includes(query));
+
         // Filter classrooms that match the query
-        const matchingClassrooms = building.classrooms.filter(room => 
+        const matchingClassrooms = building.classrooms.filter(room =>
           room.name.toLowerCase().includes(query)
         );
-        
+
         // Return building with filtered rooms if either building matches or has matching rooms
         if (buildingMatches || matchingClassrooms.length > 0) {
           return {
@@ -344,45 +344,45 @@ const Sidebar = ({
             classrooms: buildingMatches ? building.classrooms : matchingClassrooms
           };
         }
-        
+
         return null; // Exclude building if no matches
       }).filter(building => building !== null);
     }
-    
+
     // If showing favorites mode, first filter to just favorite buildings or buildings with favorited rooms
     if (showFavorites) {
       // Get building codes that are favorited directly
       const directlyFavoritedBuildingCodes = favoriteBuildings.map(b => b.code);
-      
+
       // Get building codes that contain favorited rooms
       const buildingCodesWithFavoritedRooms = favoriteRooms.map(r => r.buildingCode);
-      
+
       // Combine unique building codes
       const allFavoritedBuildingCodes = [...new Set([
         ...directlyFavoritedBuildingCodes,
         ...buildingCodesWithFavoritedRooms
       ])];
-      
+
       baseBuildings = baseBuildings.filter(building => allFavoritedBuildingCodes.includes(building.code));
-      
+
       return baseBuildings.map(building => {
         // If the building is directly favorited, keep all its rooms
         if (directlyFavoritedBuildingCodes.includes(building.code)) {
           return building;
         }
-        
+
         // Otherwise filter to just favorited rooms
         const favoritedRoomIds = favoriteRooms
           .filter(r => r.buildingCode === building.code)
           .map(r => r.id);
-        
+
         return {
           ...building,
           classrooms: building.classrooms.filter(room => favoritedRoomIds.includes(room.id))
         };
       });
     }
-    
+
     // Standard filtering based on mode
     if (isNow) {
       // In "Now" mode, display all buildings and classrooms without filtering
@@ -412,19 +412,19 @@ const Sidebar = ({
         })
         .filter((building) => building !== null);
     }
-  }, [buildings, selectedStartDateTime, selectedEndDateTime, isNow, 
-      showFavorites, favoriteBuildings, favoriteRooms, searchQuery]);
+  }, [buildings, selectedStartDateTime, selectedEndDateTime, isNow,
+    showFavorites, favoriteBuildings, favoriteRooms, searchQuery]);
 
   // Check if a building is favorited
   const isBuildingFavorite = (buildingCode) => {
     return favoriteBuildings.some(b => b.code === buildingCode);
   };
-  
+
   // Check if a room is favorited
   const isRoomFavorite = (roomId) => {
     return favoriteRooms.some(r => r.id === roomId);
   };
-  
+
   // Handle toggling favorites mode
   const toggleFavoritesMode = () => {
     setShowFavorites(prev => !prev);
@@ -432,11 +432,11 @@ const Sidebar = ({
 
   // State to track if we're in focused building mode (for mobile)
   const [focusedBuildingMode, setFocusedBuildingMode] = useState(false);
-  
+
   // Use the mapSelectionMode prop to control focused mode
   useEffect(() => {
     console.log("Building selected, mapSelectionMode:", mapSelectionMode);
-    
+
     // When a building is selected from the map, enter focused mode
     if (selectedBuilding && mapSelectionMode) {
       console.log("Activating focused mode from map selection!");
@@ -446,19 +446,19 @@ const Sidebar = ({
       console.log("Regular selection - no focus mode");
       setFocusedBuildingMode(false);
     }
-    
+
     // Reset focus mode when building is deselected
     if (!selectedBuilding) {
       setFocusedBuildingMode(false);
     }
   }, [selectedBuilding, mapSelectionMode]);
-  
+
   // Handler to exit focused building mode
   const handleExitFocusMode = () => {
     setFocusedBuildingMode(false);
     onBuildingSelect(null, false); // Deselect the building, not from map
   };
-  
+
   return (
     <div ref={sidebarRef} className={`sidebar ${darkMode ? 'dark-mode' : ''} ${focusedBuildingMode ? 'focused-building-mode' : ''}`}>
       <div className="sidebar-header">
@@ -500,7 +500,7 @@ const Sidebar = ({
           </>
         )}
       </div>
-      
+
       {/* Search Bar - only show when not in focused mode */}
       {!focusedBuildingMode && (
         <div className="search-container">
@@ -513,8 +513,8 @@ const Sidebar = ({
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {searchQuery && (
-              <button 
-                className="clear-search" 
+              <button
+                className="clear-search"
                 onClick={() => setSearchQuery('')}
                 aria-label="Clear search"
               >
@@ -668,7 +668,7 @@ const Sidebar = ({
 
       {/* Building and Classroom Lists */}
       {filteredBuildings.length === 0 ? (
-        <p>{showFavorites && (favoriteBuildings.length === 0 && favoriteRooms.length === 0) 
+        <p>{showFavorites && (favoriteBuildings.length === 0 && favoriteRooms.length === 0)
           ? "You haven't favorited any buildings or rooms yet. Click the ☆ icon next to a building or room to add it to your favorites!"
           : "No available buildings during this time range."}</p>
       ) : (
@@ -688,7 +688,7 @@ const Sidebar = ({
                 onClick={() => handleBuildingClick(building)}
               >
                 <span className="building-name-text">{building.name}</span>
-                <button 
+                <button
                   className={`favorite-button ${isBuildingFavorite(building.code) ? 'favorited' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent building click
@@ -722,7 +722,7 @@ const Sidebar = ({
                         <div className={`classroom-item ${isRoomFavorite(room.id) ? 'favorited' : ''}`}>
                           <div className="classroom-name">{room.name}</div>
                           <div className="classroom-actions">
-                            <button 
+                            <button
                               className={`favorite-button small ${isRoomFavorite(room.id) ? 'favorited' : ''}`}
                               onClick={(e) => {
                                 e.stopPropagation(); // Prevent classroom click
@@ -744,13 +744,13 @@ const Sidebar = ({
                         {isSelectedClassroom && (
                           <div className="classroom-schedule">
                             <h4>Schedule for {room.name}</h4>
-                            
+
                             {/* Room Details Section */}
                             <div className="room-details">
                               <div className="room-details-header">
                                 <h5>Room Details</h5>
                               </div>
-                              
+
                               <div className="room-info-grid">
                                 <div className="room-info-item">
                                   <span className="info-label">Type</span>
@@ -762,23 +762,23 @@ const Sidebar = ({
                                     {room.floor || (() => {
                                       // Split room name by spaces to get parts
                                       const parts = room.name.split(' ');
-                                      
+
                                       // If we have at least 2 parts (building code and room number)
                                       if (parts.length >= 2) {
                                         // Get the room number part
                                         const roomNumber = parts[1];
-                                        
+
                                         // Check if room number starts with 0
                                         if (roomNumber.startsWith('0')) {
                                           return 'Ground Floor';
                                         }
-                                        
+
                                         // Otherwise return first digit of room number
                                         if (/^\d/.test(roomNumber)) {
                                           return roomNumber.charAt(0);
                                         }
                                       }
-                                      
+
                                       // Fallback to 1 if we can't determine floor
                                       return '1';
                                     })()}
@@ -789,7 +789,7 @@ const Sidebar = ({
                                   <div className="feature-pills">
                                     <span className="feature-pill">Projector</span>
                                     <span className="feature-pill">Whiteboard</span>
-                                    {room.name.includes('C') && 
+                                    {room.name.includes('C') &&
                                       <span className="feature-pill">Computers</span>
                                     }
                                   </div>
@@ -801,25 +801,25 @@ const Sidebar = ({
                             <div className="availability-viz">
                               <h5>{isNow ? "Today's Availability" : `Availability on ${selectedStartDateTime.toLocaleDateString()}`}</h5>
                               <div className="time-blocks">
-                                {Array.from({length: 16}, (_, i) => {
+                                {Array.from({ length: 16 }, (_, i) => {
                                   const hour = i + 7; // Start at 7am
-                                  
+
                                   // Check if hour is booked by an event
                                   const isBooked = classroomSchedule.some(event => {
                                     const startHour = Math.floor(parseFloat(event.time_start));
                                     const endHour = Math.ceil(parseFloat(event.time_end));
                                     return hour >= startHour && hour < endHour;
                                   });
-                                  
+
                                   // Current time indicator
                                   const currentHour = new Date().getHours();
                                   const isCurrent = hour === currentHour;
-                                  
+
                                   // Check if this hour is within user's selected time range (only in search mode)
                                   const isInSelectedTimeRange = !isNow && (() => {
                                     const startHour = selectedStartDateTime.getHours();
                                     const endHour = selectedEndDateTime.getHours();
-                                    
+
                                     // If end time is on the same day
                                     if (
                                       selectedStartDateTime.toDateString() === selectedEndDateTime.toDateString() &&
@@ -829,7 +829,7 @@ const Sidebar = ({
                                     }
                                     return false;
                                   })();
-                                  
+
                                   // Build tooltip text
                                   let tooltipText = `${hour > 12 ? hour - 12 : hour}${hour >= 12 ? 'pm' : 'am'}: `;
                                   if (isBooked) {
@@ -837,13 +837,13 @@ const Sidebar = ({
                                   } else {
                                     tooltipText += 'Available';
                                   }
-                                  
+
                                   // Only show current time indicator in "Now" mode
                                   const showCurrentIndicator = isNow && isCurrent;
-                                  
+
                                   return (
-                                    <div 
-                                      key={hour} 
+                                    <div
+                                      key={hour}
                                       className={`time-block 
                                         ${isBooked ? 'booked' : 'available'} 
                                         ${showCurrentIndicator ? 'current' : ''} 
@@ -851,8 +851,8 @@ const Sidebar = ({
                                       `}
                                       title={tooltipText}
                                     >
-                                      {hour === 7 || hour === 12 || hour === 17 || hour === 22 ? 
-                                        <span className="hour-label">{hour > 12 ? hour - 12 : hour}{hour >= 12 ? 'pm' : 'am'}</span> 
+                                      {hour === 7 || hour === 12 || hour === 17 || hour === 22 ?
+                                        <span className="hour-label">{hour > 12 ? hour - 12 : hour}{hour >= 12 ? 'pm' : 'am'}</span>
                                         : ''}
                                     </div>
                                   );
@@ -867,7 +867,7 @@ const Sidebar = ({
                                 </div>
                               )}
                             </div>
-                            
+
                             <h5>Schedule</h5>
                             {classroomSchedule.length > 0 ? (
                               <ul>

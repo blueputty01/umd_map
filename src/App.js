@@ -10,17 +10,17 @@ const App = () => {
   const [selectedEndDateTime, setSelectedEndDateTime] = useState(new Date());
 
   const [selectedBuilding, setSelectedBuilding] = useState(null);
-  const [showMap, setShowMap] = useState(true); // New state variable for toggling map
+  const [showMap, setShowMap] = useState(false); // New state variable for toggling map
   const [darkMode, setDarkMode] = useState(false); // State for dark mode toggle
   const [mapSelectionMode, setMapSelectionMode] = useState(false); // Track if selection came from map
-  
+
   // Favorites system
   const [favoriteBuildings, setFavoriteBuildings] = useState(() => {
     // Initialize from localStorage if available
     const saved = localStorage.getItem('favoriteBuildings');
     return saved ? JSON.parse(saved) : [];
   });
-  
+
   const [favoriteRooms, setFavoriteRooms] = useState(() => {
     // Initialize from localStorage if available
     const saved = localStorage.getItem('favoriteRooms');
@@ -29,7 +29,7 @@ const App = () => {
 
   const handleBuildingSelect = useCallback((building, fromMap = false) => {
     console.log(`Building selected: ${building?.name || 'none'}, fromMap: ${fromMap}`);
-    
+
     // Set both the building and whether selection came from map
     setSelectedBuilding(building);
     setMapSelectionMode(fromMap);
@@ -76,27 +76,27 @@ const App = () => {
       document.body.classList.remove('dark-mode');
     }
   }, [darkMode]);
-  
+
   // Effect to save favorites to localStorage
   useEffect(() => {
     localStorage.setItem('favoriteBuildings', JSON.stringify(favoriteBuildings));
   }, [favoriteBuildings]);
-  
+
   useEffect(() => {
     localStorage.setItem('favoriteRooms', JSON.stringify(favoriteRooms));
   }, [favoriteRooms]);
-  
+
   // Toggle dark mode function
   const toggleDarkMode = useCallback(() => {
     setDarkMode(prev => !prev);
   }, []);
-  
+
   // Favorites management functions
   const toggleFavoriteBuilding = useCallback((building) => {
     setFavoriteBuildings(prev => {
       const buildingCode = building.code;
       const isAlreadyFavorite = prev.some(fav => fav.code === buildingCode);
-      
+
       if (isAlreadyFavorite) {
         return prev.filter(fav => fav.code !== buildingCode);
       } else {
@@ -104,18 +104,18 @@ const App = () => {
       }
     });
   }, []);
-  
+
   const toggleFavoriteRoom = useCallback((building, room) => {
     setFavoriteRooms(prev => {
       const roomId = room.id;
       const isAlreadyFavorite = prev.some(fav => fav.id === roomId);
-      
+
       if (isAlreadyFavorite) {
         return prev.filter(fav => fav.id !== roomId);
       } else {
-        return [...prev, { 
-          id: roomId, 
-          name: room.name, 
+        return [...prev, {
+          id: roomId,
+          name: room.name,
           buildingCode: building.code,
           buildingName: building.name
         }];
