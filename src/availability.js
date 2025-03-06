@@ -191,7 +191,7 @@ export function getClassroomAvailability(
 
   return [
     overlappingEvents.length === 0 ? "Available" : "Unavailable",
-    shortest,
+    shortest === Number.MAX_SAFE_INTEGER ? undefined : shortest,
   ];
 }
 
