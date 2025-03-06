@@ -703,11 +703,12 @@ const Sidebar = ({
                 <ul className="classroom-list">
                   {building.classrooms.map((room) => {
                     // Compute availability status
-                    const availabilityStatus = getClassroomAvailability(
-                      room,
-                      isNow ? null : selectedStartDateTime,
-                      isNow ? null : selectedEndDateTime
-                    );
+                    const [availabilityStatus, shortest] =
+                      getClassroomAvailability(
+                        room,
+                        isNow ? null : selectedStartDateTime,
+                        isNow ? null : selectedEndDateTime,
+                      );
                     const isSelectedClassroom =
                       selectedClassroom && selectedClassroom.id === room.id;
                     return (
@@ -737,7 +738,9 @@ const Sidebar = ({
                                 .toLowerCase()
                                 .replace(" ", "-")}`}
                             >
-                              {availabilityStatus}
+                              {shortest
+                                ? `${availabilityStatus} for ${Math.round(shortest / 60 / 1000)} min`
+                                : availabilityStatus}
                             </div>
                           </div>
                         </div>

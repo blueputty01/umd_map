@@ -79,24 +79,38 @@ export function getClassroomAvailability(
   const dateToCheck = new Date(currentStartTime);
   const dayOfWeek = dateToCheck.getDay();
   if (dayOfWeek === 0 || dayOfWeek === 6) {
-    return debug ? { status: 'Closed', reason: 'Weekend' } : 'Closed';
+    return [
+      debug ? { status: "Closed", reason: "Weekend" } : "Closed",
+      undefined,
+    ];
   }
 
   // Check holidays
   if (isUniversityHoliday(dateToCheck)) {
-    return debug ? { status: 'Closed', reason: 'Holiday' } : 'Closed';
+    return [
+      debug ? { status: "Closed", reason: "Holiday" } : "Closed",
+      undefined,
+    ];
   }
 
   // Check operating hours
   const currentHour = currentStartTime.getHours() + currentStartTime.getMinutes() / 60;
 
   if (currentHour < OPERATING_START_HOUR || currentHour >= OPERATING_END_HOUR) {
-    return debug ? { status: 'Closed', reason: 'Outside Operating Hours' } : 'Closed';
+    return [
+      debug
+        ? { status: "Closed", reason: "Outside Operating Hours" }
+        : "Closed",
+      undefined,
+    ];
   }
 
   // Check if availability data exists
   if (!room.availability_times || !Array.isArray(room.availability_times)) {
-    return debug ? { status: 'Available', reason: 'No Schedule Data' } : 'Available';
+    return [
+      debug ? { status: "Available", reason: "No Schedule Data" } : "Available",
+      undefined,
+    ];
   }
 
   // Get events for the date and with status:1
@@ -107,9 +121,13 @@ export function getClassroomAvailability(
   });
 
   if (todayAvailability.length === 0) {
-    return debug ? { status: 'Available', reason: 'No Events Today' } : 'Available';
+    return [
+      debug ? { status: "Available", reason: "No Events Today" } : "Available",
+      undefined,
+    ];
   }
 
+  let shortest = Number.MAX_SAFE_INTEGER;
   // Check for overlapping events
   const overlappingEvents = todayAvailability.filter((timeRange) => {
     const eventStartDecimal = parseFloat(timeRange.time_start);
@@ -117,6 +135,11 @@ export function getClassroomAvailability(
 
     const eventStart = decimalHoursToDate(currentStartTime, eventStartDecimal);
     const eventEnd = decimalHoursToDate(currentStartTime, eventEndDecimal);
+
+    const distanceToStart = eventStart - currentEndTime;
+    if (distanceToStart > 0) {
+      shortest = Math.min(shortest, distanceToStart);
+    }
 
     if (selectedStartDateTime && selectedEndDateTime) {
       // For scheduled time slots, check if the requested time range overlaps with any events
@@ -141,14 +164,23 @@ export function getClassroomAvailability(
       overlaps: true
     }));
 
-    return {
-      status: overlappingEvents.length === 0 ? 'Available' : 'Unavailable',
-      reason: overlappingEvents.length === 0 ? 'No Conflicts' : 'Conflicting Events',
-      debug: debugInfo
-    };
+    return [
+      {
+        status: overlappingEvents.length === 0 ? "Available" : "Unavailable",
+        reason:
+          overlappingEvents.length === 0
+            ? "No Conflicts"
+            : "Conflicting Events",
+        debug: debugInfo,
+      },
+      shortest,
+    ];
   }
 
-  return overlappingEvents.length === 0 ? 'Available' : 'Unavailable';
+  return [
+    overlappingEvents.length === 0 ? "Available" : "Unavailable",
+    shortest,
+  ];
 }
 
 /**
