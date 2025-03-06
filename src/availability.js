@@ -1,24 +1,33 @@
 // src/availability.js
 
-import { toZonedTime, format } from 'date-fns-tz';
+import { toZonedTime, format } from "date-fns-tz";
 
 // Define University Holidays
 const UNIVERSITY_HOLIDAYS = [
-  '2024-01-01', // New Year's Day
-  '2024-07-04', // Independence Day
-  '2024-12-25', // Christmas Day
+  "2024-01-01", // New Year's Day
+  "2024-07-04", // Independence Day
+  "2024-12-25", // Christmas Day
   // Add more holidays as needed
 ];
 
-const OPERATING_START_HOUR = 7;  // 7 AM
-const OPERATING_END_HOUR = 22;   // 10 PM
+const OPERATING_START_HOUR = 7; // 7 AM
+const OPERATING_END_HOUR = 22; // 10 PM
 
 /**
  * Debug function to log availability calculation steps
  */
-export function debugClassroomAvailability(room, selectedStartDateTime, selectedEndDateTime) {
-  const debug = getClassroomAvailability(room, selectedStartDateTime, selectedEndDateTime, true);
-  console.log('Availability Debug:', debug);
+export function debugClassroomAvailability(
+  room,
+  selectedStartDateTime,
+  selectedEndDateTime,
+) {
+  const debug = getClassroomAvailability(
+    room,
+    selectedStartDateTime,
+    selectedEndDateTime,
+    true,
+  );
+  console.log("Availability Debug:", debug);
   return debug.status;
 }
 
@@ -26,7 +35,9 @@ export function debugClassroomAvailability(room, selectedStartDateTime, selected
  * Checks if a given date is a university holiday.
  */
 function isUniversityHoliday(date) {
-  const formattedDate = format(date, 'yyyy-MM-dd', { timeZone: 'America/New_York' });
+  const formattedDate = format(date, "yyyy-MM-dd", {
+    timeZone: "America/New_York",
+  });
   return UNIVERSITY_HOLIDAYS.includes(formattedDate);
 }
 
@@ -50,9 +61,9 @@ export function getClassroomAvailability(
   room,
   selectedStartDateTime = null,
   selectedEndDateTime = null,
-  debug = false
+  debug = false,
 ) {
-  const timeZone = 'America/New_York';
+  const timeZone = "America/New_York";
   const debugInfo = debug ? { steps: [], events: [] } : null;
 
   // Get current times
@@ -67,11 +78,11 @@ export function getClassroomAvailability(
 
   if (debug) {
     debugInfo.steps.push({
-      step: 'Times',
+      step: "Times",
       requested: {
         start: currentStartTime.toISOString(),
-        end: currentEndTime.toISOString()
-      }
+        end: currentEndTime.toISOString(),
+      },
     });
   }
 
@@ -94,7 +105,8 @@ export function getClassroomAvailability(
   }
 
   // Check operating hours
-  const currentHour = currentStartTime.getHours() + currentStartTime.getMinutes() / 60;
+  const currentHour =
+    currentStartTime.getHours() + currentStartTime.getMinutes() / 60;
 
   if (currentHour < OPERATING_START_HOUR || currentHour >= OPERATING_END_HOUR) {
     return [
@@ -114,9 +126,9 @@ export function getClassroomAvailability(
   }
 
   // Get events for the date and with status:1
-  const dateString = format(dateToCheck, 'yyyy-MM-dd', { timeZone });
+  const dateString = format(dateToCheck, "yyyy-MM-dd", { timeZone });
   const todayAvailability = room.availability_times.filter((timeRange) => {
-    const eventDatePart = timeRange.date.split('T')[0];
+    const eventDatePart = timeRange.date.split("T")[0];
     return eventDatePart === dateString && timeRange.status === 1;
   });
 
@@ -152,16 +164,16 @@ export function getClassroomAvailability(
 
   if (debug) {
     debugInfo.steps.push({
-      step: 'Events',
+      step: "Events",
       totalEvents: todayAvailability.length,
-      overlappingEvents: overlappingEvents.length
+      overlappingEvents: overlappingEvents.length,
     });
 
     debugInfo.events = overlappingEvents.map((event) => ({
       event: event.event_name,
       eventTime: `${event.time_start} - ${event.time_end}`,
       currentTime: currentHour,
-      overlaps: true
+      overlaps: true,
     }));
 
     return [
@@ -189,16 +201,20 @@ export function getClassroomAvailability(
 export function getBuildingAvailability(
   classrooms,
   selectedStartDateTime = null,
-  selectedEndDateTime = null
+  selectedEndDateTime = null,
 ) {
   if (!Array.isArray(classrooms) || classrooms.length === 0) {
-    return 'No Data';
+    return "No Data";
   }
 
   const hasAvailableRoom = classrooms.some((room) => {
-    const status = getClassroomAvailability(room, selectedStartDateTime, selectedEndDateTime);
-    return status === 'Available';
+    const status = getClassroomAvailability(
+      room,
+      selectedStartDateTime,
+      selectedEndDateTime,
+    );
+    return status === "Available";
   });
 
-  return hasAvailableRoom ? 'Available' : 'Unavailable';
+  return hasAvailableRoom ? "Available" : "Unavailable";
 }
