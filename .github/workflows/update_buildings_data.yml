@@ -2,13 +2,13 @@ name: Weekly Update of buildings_data.json to umd_map
 
 on:
   schedule:
-    - cron: '0 0 * * 1'  # Runs every Monday at 00:00 UTC
-  workflow_dispatch:      # Allows manual triggering
+    - cron: "0 0 * * 1" # Runs every Monday at 00:00 UTC
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   update-and-push:
     runs-on: ubuntu-latest
-    env: 
+    env:
       root: .github/api
     steps:
       - name: Checkout Repository
@@ -17,7 +17,7 @@ jobs:
       - name: Set Up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       - name: Set up environment
         run: |
@@ -26,17 +26,17 @@ jobs:
 
       - name: Run Fetch Availability Script
         run: |
-          ls
-          python ${{ env.root }}/fetch_availability.py
+          cd ${{ env.root }}
+          python fetch_availability.py
 
       # Step 5: Validate buildings_data.json
       - name: Validate buildings_data.json
         run: |
-          python -m json.tool buildings_data.json > /dev/null
+          python -m json.tool ${{ env.root }}/buildings_data.json > /dev/null
 
       - name: Move buildings_data.json
         run: |
-          mv buildings_data.json public/buildings_data.json  # Adjust the destination path if different
+          mv ${{ env.root }}/buildings_data.json public/buildings_data.json  # Adjust the destination path if different
 
       - name: Commit changes
         run: |
