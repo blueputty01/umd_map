@@ -237,7 +237,7 @@ def fetch_availability_for_all_classrooms(classrooms, start_date=None, max_worke
 
 def main():
     # Load buildings from JSON file
-    buildings = load_buildings("building_ids.json")
+    buildings = load_buildings("buildings.json")
     print(f"Loaded {len(buildings)} buildings from buildings.json")
 
     # Load classrooms from JSON file and associate with buildings
