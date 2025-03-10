@@ -65,25 +65,17 @@ class Building:
 
 def load_buildings(json_file: str) -> List[Building]:
     """Load buildings from JSON file"""
-    try:
-        with open(json_file, "r") as f:
-            buildings_data = json.load(f)
+    with open(json_file, "r") as f:
+        buildings_data = json.load(f)
         buildings = [Building.from_json(b_data) for b_data in buildings_data]
         return buildings
-    except FileNotFoundError:
-        print(f"Error: Could not find {json_file}")
-        return []
-    except json.JSONDecodeError:
-        print(f"Error: Invalid JSON in {json_file}")
-        return []
 
 
 def load_classrooms_from_json(buildings: List[Building], json_file: str):
     """Load classroom data from JSON file and associate with buildings"""
     unmatched_classrooms = []
-    try:
-        with open(json_file, "r") as f:
-            rooms_data = json.load(f)
+    with open(json_file, "r") as f:
+        rooms_data = json.load(f)
 
         # Create mappings of building codes and names to Building objects
         building_map_code = {b.code: b for b in buildings if b.code}
@@ -143,13 +135,6 @@ def load_classrooms_from_json(buildings: List[Building], json_file: str):
                     )
                 )
         return unmatched_classrooms
-
-    except FileNotFoundError:
-        print(f"Error: Could not find {json_file}")
-        return []
-    except json.JSONDecodeError:
-        print(f"Error: Invalid JSON in {json_file}")
-        return []
 
 
 def fetch_availability_for_classroom(classroom, start_date=None, page_size=100):
