@@ -856,6 +856,13 @@ const Sidebar = ({
                                 </div>
                                 <div className="room-info-item">
                                   <span className="info-label">Features</span>
+                                  <a
+                                    href={`https://25live.collegenet.com/pro/umd#!/home/location/${room.id}/details`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    Open in 25live
+                                  </a>
                                   <div className="feature-pills">
                                     <span className="feature-pill">
                                       Projector
