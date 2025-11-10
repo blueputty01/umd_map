@@ -1,22 +1,16 @@
 // src/Sidebar.js
 
 // React imports
-import React, {
-  useEffect,
-  useState,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
-import "./Sidebar.css"; // Styles for the sidebar
-import { getClassroomAvailability } from "./availability";
-import PropTypes from "prop-types";
+import React, { useEffect, useState, useRef, useMemo } from 'react';
+import './Sidebar.css'; // Styles for the sidebar
+import { getClassroomAvailability } from './availability';
+import PropTypes from 'prop-types';
 
 // Import necessary modules from date-fns
-import { parseISO, format, parse } from "date-fns";
+import { parseISO, format, parse } from 'date-fns';
 // Import Atlaskit components
-import { Label } from "@atlaskit/form";
-import { DatePicker, TimePicker } from "@atlaskit/datetime-picker";
+import { Label } from '@atlaskit/form';
+import { DatePicker, TimePicker } from '@atlaskit/datetime-picker';
 
 const Sidebar = ({
   onBuildingSelect,
@@ -42,14 +36,14 @@ const Sidebar = ({
   const [showDescription, setShowDescription] = useState(false);
   const [isNow, setIsNow] = useState(true);
   const [showFavorites, setShowFavorites] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const buildingRefs = useRef({});
 
   useEffect(() => {
-    fetch(process.env.PUBLIC_URL + "/buildings_data.json")
+    fetch(process.env.PUBLIC_URL + '/buildings_data.json')
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error('Network response was not ok');
         }
         return response.json();
       })
@@ -59,7 +53,7 @@ const Sidebar = ({
           .sort((a, b) => a.name.localeCompare(b.name));
         setBuildings(sortedBuildings);
       })
-      .catch((error) => console.error("Error loading building data:", error));
+      .catch((error) => console.error('Error loading building data:', error));
   }, []);
 
   // Update expanded building when selectedBuilding or isNow changes
@@ -69,7 +63,7 @@ const Sidebar = ({
   useEffect(() => {
     if (selectedBuilding) {
       const matchingBuilding = buildings.find(
-        (b) => b.code === selectedBuilding.code,
+        (b) => b.code === selectedBuilding.code
       );
 
       // Always expand the building, whether selected via map or sidebar
@@ -129,13 +123,13 @@ const Sidebar = ({
   }, [selectedBuilding, buildings, isNow]);
 
   const handleBuildingClick = (building) => {
-    console.log("Building clicked in sidebar");
+    console.log('Building clicked in sidebar');
 
     // Always exit focused mode when clicking in the sidebar
     setFocusedBuildingMode(false);
 
     setExpandedBuilding((prevBuilding) =>
-      prevBuilding && prevBuilding.code === building.code ? null : building,
+      prevBuilding && prevBuilding.code === building.code ? null : building
     );
     setSelectedClassroom(null); // Reset selected classroom when collapsing/expanding building
 
@@ -147,7 +141,7 @@ const Sidebar = ({
 
   const handleClassroomClick = (classroom) => {
     setSelectedClassroom((prevClassroom) =>
-      prevClassroom && prevClassroom.id === classroom.id ? null : classroom,
+      prevClassroom && prevClassroom.id === classroom.id ? null : classroom
     );
   };
 
@@ -155,13 +149,13 @@ const Sidebar = ({
   const classroomSchedule = useMemo(() => {
     if (selectedClassroom) {
       const selectedDate = isNow ? new Date() : selectedStartDateTime;
-      const selectedDateString = format(selectedDate, "yyyy-MM-dd");
+      const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
 
       const filteredSchedule = selectedClassroom.availability_times.filter(
         (timeRange) => {
-          const eventDatePart = timeRange.date.split("T")[0];
+          const eventDatePart = timeRange.date.split('T')[0];
           return eventDatePart === selectedDateString;
-        },
+        }
       );
 
       if (filteredSchedule.length === 0) {
@@ -178,7 +172,7 @@ const Sidebar = ({
 
       // Sort the schedule by start time
       uniqueSchedule.sort(
-        (a, b) => parseFloat(a.time_start) - parseFloat(b.time_start),
+        (a, b) => parseFloat(a.time_start) - parseFloat(b.time_start)
       );
 
       return uniqueSchedule;
@@ -206,7 +200,7 @@ const Sidebar = ({
    */
   function decimalHoursToTimeString(decimalHours) {
     const date = decimalHoursToDate(new Date(), decimalHours);
-    return format(date, "h:mm a");
+    return format(date, 'h:mm a');
   }
 
   const toggleSearchOptions = () => {
@@ -238,7 +232,7 @@ const Sidebar = ({
     // value is in 'YYYY-MM-DD' format
     const parsedDate = parseISO(value);
     if (isNaN(parsedDate)) {
-      console.error("Invalid start date selected:", value);
+      console.error('Invalid start date selected:', value);
       return;
     }
 
@@ -253,9 +247,9 @@ const Sidebar = ({
   };
 
   const handleStartTimeChangeInternal = (value) => {
-    const parsedTime = parse(value, "h:mm a", new Date());
+    const parsedTime = parse(value, 'h:mm a', new Date());
     if (isNaN(parsedTime)) {
-      console.error("Invalid start time selected:", value);
+      console.error('Invalid start time selected:', value);
       return;
     }
     // Update selectedStartDateTime by setting the hours and minutes
@@ -271,7 +265,7 @@ const Sidebar = ({
     // value is in 'YYYY-MM-DD' format
     const parsedDate = parseISO(value);
     if (isNaN(parsedDate)) {
-      console.error("Invalid end date selected:", value);
+      console.error('Invalid end date selected:', value);
       return;
     }
 
@@ -286,9 +280,9 @@ const Sidebar = ({
   };
 
   const handleEndTimeChangeInternal = (value) => {
-    const parsedTime = parse(value, "h:mm a", new Date());
+    const parsedTime = parse(value, 'h:mm a', new Date());
     if (isNaN(parsedTime)) {
-      console.error("Invalid end time selected:", value);
+      console.error('Invalid end time selected:', value);
       return;
     }
     // Update selectedEndDateTime by setting the hours and minutes
@@ -301,16 +295,16 @@ const Sidebar = ({
   };
 
   // Generate time options from 7:00 AM to 10:00 PM in 12-hour format
-  const timeOptions = generateTimeOptions("7:00 AM", "10:00 PM", 30); // every 30 minutes
+  const timeOptions = generateTimeOptions('7:00 AM', '10:00 PM', 30); // every 30 minutes
 
   // Helper function to generate time options between startTime and endTime
   function generateTimeOptions(startTime, endTime, stepMinutes) {
     const options = [];
-    let currentTime = parse(startTime, "h:mm a", new Date());
-    const endTimeParsed = parse(endTime, "h:mm a", new Date());
+    let currentTime = parse(startTime, 'h:mm a', new Date());
+    const endTimeParsed = parse(endTime, 'h:mm a', new Date());
 
     while (currentTime <= endTimeParsed) {
-      const timeString = format(currentTime, "h:mm a");
+      const timeString = format(currentTime, 'h:mm a');
       options.push({ label: timeString, value: timeString });
       currentTime = new Date(currentTime.getTime() + stepMinutes * 60000); // add stepMinutes
     }
@@ -323,7 +317,7 @@ const Sidebar = ({
     let baseBuildings = buildings;
 
     // Apply search filter if search query exists
-    if (searchQuery.trim() !== "") {
+    if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase().trim();
 
       // Search in building names and room names
@@ -336,7 +330,7 @@ const Sidebar = ({
 
           // Filter classrooms that match the query
           const matchingClassrooms = building.classrooms.filter((room) =>
-            room.name.toLowerCase().includes(query),
+            room.name.toLowerCase().includes(query)
           );
 
           // Return building with filtered rooms if either building matches or has matching rooms
@@ -358,12 +352,12 @@ const Sidebar = ({
     if (showFavorites) {
       // Get building codes that are favorited directly
       const directlyFavoritedBuildingCodes = favoriteBuildings.map(
-        (b) => b.code,
+        (b) => b.code
       );
 
       // Get building codes that contain favorited rooms
       const buildingCodesWithFavoritedRooms = favoriteRooms.map(
-        (r) => r.buildingCode,
+        (r) => r.buildingCode
       );
 
       // Combine unique building codes
@@ -375,7 +369,7 @@ const Sidebar = ({
       ];
 
       baseBuildings = baseBuildings.filter((building) =>
-        allFavoritedBuildingCodes.includes(building.code),
+        allFavoritedBuildingCodes.includes(building.code)
       );
 
       return baseBuildings.map((building) => {
@@ -392,7 +386,7 @@ const Sidebar = ({
         return {
           ...building,
           classrooms: building.classrooms.filter((room) =>
-            favoritedRoomIds.includes(room.id),
+            favoritedRoomIds.includes(room.id)
           ),
         };
       });
@@ -411,9 +405,9 @@ const Sidebar = ({
             const [status] = getClassroomAvailability(
               room,
               selectedStartDateTime,
-              selectedEndDateTime,
+              selectedEndDateTime
             );
-            return status === "Available";
+            return status === 'Available';
           });
           if (availableClassrooms.length > 0) {
             // Return building with filtered classrooms
@@ -458,15 +452,15 @@ const Sidebar = ({
 
   // Use the mapSelectionMode prop to control focused mode
   useEffect(() => {
-    console.log("Building selected, mapSelectionMode:", mapSelectionMode);
+    console.log('Building selected, mapSelectionMode:', mapSelectionMode);
 
     // When a building is selected from the map, enter focused mode
     if (selectedBuilding && mapSelectionMode) {
-      console.log("Activating focused mode from map selection!");
+      console.log('Activating focused mode from map selection!');
       setFocusedBuildingMode(true);
     } else if (selectedBuilding && !mapSelectionMode) {
       // Direct click in sidebar - ensure focus mode is off
-      console.log("Regular selection - no focus mode");
+      console.log('Regular selection - no focus mode');
       setFocusedBuildingMode(false);
     }
 
@@ -485,7 +479,9 @@ const Sidebar = ({
   return (
     <div
       ref={sidebarRef}
-      className={`sidebar ${darkMode ? "dark-mode" : ""} ${focusedBuildingMode ? "focused-building-mode" : ""}`}
+      className={`sidebar ${darkMode ? 'dark-mode' : ''} ${
+        focusedBuildingMode ? 'focused-building-mode' : ''
+      }`}
     >
       <div className="sidebar-header">
         {focusedBuildingMode ? (
@@ -494,7 +490,7 @@ const Sidebar = ({
               ← Back to Building List
             </button>
             <h2 className="sidebar-title">
-              {selectedBuilding?.name || "Building"}
+              {selectedBuilding?.name || 'Building'}
             </h2>
           </>
         ) : (
@@ -502,24 +498,24 @@ const Sidebar = ({
             <h2 className="sidebar-title">Rooms</h2>
             <div className="header-controls">
               <button
-                className={`favorites-toggle ${showFavorites ? "active" : ""}`}
+                className={`favorites-toggle ${showFavorites ? 'active' : ''}`}
                 onClick={toggleFavoritesMode}
-                title={showFavorites ? "Show all rooms" : "Show favorites"}
-                aria-label={showFavorites ? "Show all rooms" : "Show favorites"}
+                title={showFavorites ? 'Show all rooms' : 'Show favorites'}
+                aria-label={showFavorites ? 'Show all rooms' : 'Show favorites'}
               >
-                {showFavorites ? "📋" : "⭐"}
+                {showFavorites ? '📋' : '⭐'}
               </button>
               <button
                 className="dark-mode-toggle"
                 onClick={toggleDarkMode}
                 title={
-                  darkMode ? "Switch to light mode" : "Switch to dark mode"
+                  darkMode ? 'Switch to light mode' : 'Switch to dark mode'
                 }
                 aria-label={
-                  darkMode ? "Switch to light mode" : "Switch to dark mode"
+                  darkMode ? 'Switch to light mode' : 'Switch to dark mode'
                 }
               >
-                {darkMode ? "☀️" : "🌙"}
+                {darkMode ? '☀️' : '🌙'}
               </button>
               <button
                 className="info-button"
@@ -547,7 +543,7 @@ const Sidebar = ({
             {searchQuery && (
               <button
                 className="clear-search"
-                onClick={() => setSearchQuery("")}
+                onClick={() => setSearchQuery('')}
                 aria-label="Clear search"
               >
                 ✕
@@ -627,8 +623,8 @@ const Sidebar = ({
             </label>
             <span className="toggle-label">
               {isNow
-                ? "Select Date and Time Range Off"
-                : "Select Date and Time Range"}
+                ? 'Select Date and Time Range Off'
+                : 'Select Date and Time Range'}
             </span>
           </div>
 
@@ -643,7 +639,7 @@ const Sidebar = ({
               <span className="slider round"></span>
             </label>
             <span className="toggle-label">
-              {showMap ? "Map View On" : "Map View Off"}
+              {showMap ? 'Map View On' : 'Map View Off'}
             </span>
           </div>
 
@@ -652,10 +648,10 @@ const Sidebar = ({
             <div className="toggle-search">
               <button className="toggle-button" onClick={toggleSearchOptions}>
                 {showSearchOptions
-                  ? "Hide Search Options"
-                  : "Show Search Options"}
-                <span style={{ marginLeft: "10px" }}>
-                  {showSearchOptions ? "▲" : "▼"}
+                  ? 'Hide Search Options'
+                  : 'Show Search Options'}
+                <span style={{ marginLeft: '10px' }}>
+                  {showSearchOptions ? '▲' : '▼'}
                 </span>
               </button>
             </div>
@@ -670,7 +666,7 @@ const Sidebar = ({
           <Label htmlFor="start-date">Select Start Date</Label>
           <DatePicker
             id="start-date"
-            value={format(selectedStartDateTime, "yyyy-MM-dd")}
+            value={format(selectedStartDateTime, 'yyyy-MM-dd')}
             onChange={handleStartDateChangeInternal}
             dateFormat="MM-DD"
             placeholder="MM-DD"
@@ -680,7 +676,7 @@ const Sidebar = ({
           <Label htmlFor="start-time">Select Start Time</Label>
           <TimePicker
             id="start-time"
-            value={format(selectedStartDateTime, "h:mm a")}
+            value={format(selectedStartDateTime, 'h:mm a')}
             onChange={handleStartTimeChangeInternal}
             timeFormat="h:mm a"
             placeholder="h:mm a"
@@ -693,7 +689,7 @@ const Sidebar = ({
           <Label htmlFor="end-date">Select End Date</Label>
           <DatePicker
             id="end-date"
-            value={format(selectedEndDateTime, "yyyy-MM-dd")}
+            value={format(selectedEndDateTime, 'yyyy-MM-dd')}
             onChange={handleEndDateChangeInternal}
             dateFormat="MM-DD"
             placeholder="MM-DD"
@@ -703,7 +699,7 @@ const Sidebar = ({
           <Label htmlFor="end-time">Select End Time</Label>
           <TimePicker
             id="end-time"
-            value={format(selectedEndDateTime, "h:mm a")}
+            value={format(selectedEndDateTime, 'h:mm a')}
             onChange={handleEndTimeChangeInternal}
             timeFormat="h:mm a"
             placeholder="h:mm a"
@@ -721,7 +717,7 @@ const Sidebar = ({
           favoriteBuildings.length === 0 &&
           favoriteRooms.length === 0
             ? "You haven't favorited any buildings or rooms yet. Click the ☆ icon next to a building or room to add it to your favorites!"
-            : "No available buildings during this time range."}
+            : 'No available buildings during this time range.'}
         </p>
       ) : (
         <ul className="building-list">
@@ -731,30 +727,34 @@ const Sidebar = ({
               ref={(el) => (buildingRefs.current[building.code] = el)}
               className={
                 selectedBuilding && selectedBuilding.code === building.code
-                  ? "selected-building"
-                  : ""
+                  ? 'selected-building'
+                  : ''
               }
             >
               <div
-                className={`building-name ${isBuildingFavorite(building.code) ? "favorited" : ""}`}
+                className={`building-name ${
+                  isBuildingFavorite(building.code) ? 'favorited' : ''
+                }`}
                 onClick={() => handleBuildingClick(building)}
               >
                 <span className="building-name-text">
                   {`${building.name} (${building?.classrooms.length})`}
                 </span>
                 <button
-                  className={`favorite-button ${isBuildingFavorite(building.code) ? "favorited" : ""}`}
+                  className={`favorite-button ${
+                    isBuildingFavorite(building.code) ? 'favorited' : ''
+                  }`}
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent building click
                     toggleFavoriteBuilding(building);
                   }}
                   title={
                     isBuildingFavorite(building.code)
-                      ? "Remove from favorites"
-                      : "Add to favorites"
+                      ? 'Remove from favorites'
+                      : 'Add to favorites'
                   }
                 >
-                  {isBuildingFavorite(building.code) ? "★" : "☆"}
+                  {isBuildingFavorite(building.code) ? '★' : '☆'}
                 </button>
               </div>
               {expandedBuilding && expandedBuilding.code === building.code && (
@@ -765,7 +765,7 @@ const Sidebar = ({
                       getClassroomAvailability(
                         room,
                         isNow ? null : selectedStartDateTime,
-                        isNow ? null : selectedEndDateTime,
+                        isNow ? null : selectedEndDateTime
                       );
                     const isSelectedClassroom =
                       selectedClassroom && selectedClassroom.id === room.id;
@@ -774,36 +774,42 @@ const Sidebar = ({
                         key={room.id}
                         onClick={() => handleClassroomClick(room)}
                         className={
-                          isSelectedClassroom ? "selected-classroom" : ""
+                          isSelectedClassroom ? 'selected-classroom' : ''
                         }
                         id={`room-${room.id}`}
                       >
                         <div
-                          className={`classroom-item ${isRoomFavorite(room.id) ? "favorited" : ""}`}
+                          className={`classroom-item ${
+                            isRoomFavorite(room.id) ? 'favorited' : ''
+                          }`}
                         >
                           <div className="classroom-name">{room.name}</div>
                           <div className="classroom-actions">
                             <button
-                              className={`favorite-button small ${isRoomFavorite(room.id) ? "favorited" : ""}`}
+                              className={`favorite-button small ${
+                                isRoomFavorite(room.id) ? 'favorited' : ''
+                              }`}
                               onClick={(e) => {
                                 e.stopPropagation(); // Prevent classroom click
                                 toggleFavoriteRoom(building, room);
                               }}
                               title={
                                 isRoomFavorite(room.id)
-                                  ? "Remove from favorites"
-                                  : "Add to favorites"
+                                  ? 'Remove from favorites'
+                                  : 'Add to favorites'
                               }
                             >
-                              {isRoomFavorite(room.id) ? "★" : "☆"}
+                              {isRoomFavorite(room.id) ? '★' : '☆'}
                             </button>
                             <div
                               className={`availability ${availabilityStatus
                                 .toLowerCase()
-                                .replace(" ", "-")}`}
+                                .replace(' ', '-')}`}
                             >
                               {shortest
-                                ? `${availabilityStatus} for ${Math.round(shortest / 60 / 1000)} min`
+                                ? `${availabilityStatus} for ${Math.round(
+                                    shortest / 60 / 1000
+                                  )} min`
                                 : availabilityStatus}
                             </div>
                           </div>
@@ -822,7 +828,7 @@ const Sidebar = ({
                                 <div className="room-info-item">
                                   <span className="info-label">Type</span>
                                   <span className="info-value">
-                                    {room.type || "Classroom"}
+                                    {room.type || 'Classroom'}
                                   </span>
                                 </div>
                                 <div className="room-info-item">
@@ -831,7 +837,7 @@ const Sidebar = ({
                                     {room.floor ||
                                       (() => {
                                         // Split room name by spaces to get parts
-                                        const parts = room.name.split(" ");
+                                        const parts = room.name.split(' ');
 
                                         // If we have at least 2 parts (building code and room number)
                                         if (parts.length >= 2) {
@@ -839,8 +845,8 @@ const Sidebar = ({
                                           const roomNumber = parts[1];
 
                                           // Check if room number starts with 0
-                                          if (roomNumber.startsWith("0")) {
-                                            return "Ground Floor";
+                                          if (roomNumber.startsWith('0')) {
+                                            return 'Ground Floor';
                                           }
 
                                           // Otherwise return first digit of room number
@@ -850,7 +856,7 @@ const Sidebar = ({
                                         }
 
                                         // Fallback to 1 if we can't determine floor
-                                        return "1";
+                                        return '1';
                                       })()}
                                   </span>
                                 </div>
@@ -870,7 +876,7 @@ const Sidebar = ({
                                     <span className="feature-pill">
                                       Whiteboard
                                     </span>
-                                    {room.name.includes("C") && (
+                                    {room.name.includes('C') && (
                                       <span className="feature-pill">
                                         Computers
                                       </span>
@@ -895,15 +901,15 @@ const Sidebar = ({
                                   const isBooked = classroomSchedule.some(
                                     (event) => {
                                       const startHour = Math.floor(
-                                        parseFloat(event.time_start),
+                                        parseFloat(event.time_start)
                                       );
                                       const endHour = Math.ceil(
-                                        parseFloat(event.time_end),
+                                        parseFloat(event.time_end)
                                       );
                                       return (
                                         hour >= startHour && hour < endHour
                                       );
-                                    },
+                                    }
                                   );
 
                                   // Current time indicator
@@ -932,11 +938,13 @@ const Sidebar = ({
                                     })();
 
                                   // Build tooltip text
-                                  let tooltipText = `${hour > 12 ? hour - 12 : hour}${hour >= 12 ? "pm" : "am"}: `;
+                                  let tooltipText = `${
+                                    hour > 12 ? hour - 12 : hour
+                                  }${hour >= 12 ? 'pm' : 'am'}: `;
                                   if (isBooked) {
-                                    tooltipText += "Booked";
+                                    tooltipText += 'Booked';
                                   } else {
-                                    tooltipText += "Available";
+                                    tooltipText += 'Available';
                                   }
 
                                   // Only show current time indicator in "Now" mode
@@ -947,9 +955,15 @@ const Sidebar = ({
                                     <div
                                       key={hour}
                                       className={`time-block 
-                                        ${isBooked ? "booked" : "available"} 
-                                        ${showCurrentIndicator ? "current" : ""} 
-                                        ${isInSelectedTimeRange && !isBooked ? "selected-time" : ""}
+                                        ${isBooked ? 'booked' : 'available'} 
+                                        ${
+                                          showCurrentIndicator ? 'current' : ''
+                                        } 
+                                        ${
+                                          isInSelectedTimeRange && !isBooked
+                                            ? 'selected-time'
+                                            : ''
+                                        }
                                       `}
                                       title={tooltipText}
                                     >
@@ -959,10 +973,10 @@ const Sidebar = ({
                                       hour === 22 ? (
                                         <span className="hour-label">
                                           {hour > 12 ? hour - 12 : hour}
-                                          {hour >= 12 ? "pm" : "am"}
+                                          {hour >= 12 ? 'pm' : 'am'}
                                         </span>
                                       ) : (
-                                        ""
+                                        ''
                                       )}
                                     </div>
                                   );
@@ -984,11 +998,11 @@ const Sidebar = ({
                                 {classroomSchedule.map((timeRange, index) => {
                                   const eventStart = decimalHoursToDate(
                                     isNow ? new Date() : selectedStartDateTime,
-                                    timeRange.time_start,
+                                    timeRange.time_start
                                   );
                                   const eventEnd = decimalHoursToDate(
                                     isNow ? new Date() : selectedStartDateTime,
-                                    timeRange.time_end,
+                                    timeRange.time_end
                                   );
                                   const now = new Date();
                                   const isActive =
@@ -997,15 +1011,15 @@ const Sidebar = ({
                                   return (
                                     <li
                                       key={index}
-                                      className={isActive ? "active-event" : ""}
+                                      className={isActive ? 'active-event' : ''}
                                     >
                                       <strong>
                                         {decimalHoursToTimeString(
-                                          timeRange.time_start,
-                                        )}{" "}
-                                        -{" "}
+                                          timeRange.time_start
+                                        )}{' '}
+                                        -{' '}
                                         {decimalHoursToTimeString(
-                                          timeRange.time_end,
+                                          timeRange.time_end
                                         )}
                                       </strong>
                                       : <em>{timeRange.event_name}</em>
