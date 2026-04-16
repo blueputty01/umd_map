@@ -50,7 +50,7 @@ const App = () => {
     setSelectedStartDateTime((prevDateTime) => {
       const newDateTime =
         typeof update === 'function' ? update(prevDateTime) : update;
-      if (!(newDateTime instanceof Date) || isNaN(newDateTime)) {
+      if (!(newDateTime instanceof Date) || isNaN(newDateTime.getTime())) {
         console.error('Invalid dateTime received:', newDateTime);
         return prevDateTime;
       }
@@ -69,7 +69,7 @@ const App = () => {
     setSelectedEndDateTime((prevDateTime) => {
       const newDateTime =
         typeof update === 'function' ? update(prevDateTime) : update;
-      if (!(newDateTime instanceof Date) || isNaN(newDateTime)) {
+      if (!(newDateTime instanceof Date) || isNaN(newDateTime.getTime())) {
         console.error('Invalid dateTime received:', newDateTime);
         return prevDateTime;
       }
