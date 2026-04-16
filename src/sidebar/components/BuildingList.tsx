@@ -65,9 +65,6 @@ const BuildingList = ({
     );
   }
 
-  console.log(expandedBuilding?.code);
-  console.log(filteredBuildings);
-
   return (
     <ul className="building-list">
       {filteredBuildings.map((building) => (
