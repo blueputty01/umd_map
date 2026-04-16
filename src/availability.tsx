@@ -1,17 +1,33 @@
-// src/availability.js
-
-import { toZonedTime, format } from "date-fns-tz";
+import { toZonedTime, format } from 'date-fns-tz';
 
 // Define University Holidays
 const UNIVERSITY_HOLIDAYS = [
-  "2024-01-01", // New Year's Day
-  "2024-07-04", // Independence Day
-  "2024-12-25", // Christmas Day
+  '2024-01-01', // New Year's Day
+  '2024-07-04', // Independence Day
+  '2024-12-25', // Christmas Day
   // Add more holidays as needed
 ];
 
 const OPERATING_START_HOUR = 7; // 7 AM
 const OPERATING_END_HOUR = 22; // 10 PM
+
+type AvailabilityStatus = 'Available' | 'Unavailable' | 'Closed';
+
+type AvailabilityDebugInfo = {
+  steps: Array<Record<string, unknown>>;
+  events: Array<Record<string, unknown>>;
+};
+
+type AvailabilityDebugResult = {
+  status: AvailabilityStatus;
+  reason: string;
+  debug?: AvailabilityDebugInfo;
+};
+
+type AvailabilityResult = [
+  AvailabilityStatus | AvailabilityDebugResult,
+  number | undefined,
+];
 
 /**
  * Debug function to log availability calculation steps
@@ -21,22 +37,22 @@ export function debugClassroomAvailability(
   selectedStartDateTime,
   selectedEndDateTime,
 ) {
-  const debug = getClassroomAvailability(
+  const [debugResult] = getClassroomAvailability(
     room,
     selectedStartDateTime,
     selectedEndDateTime,
     true,
   );
-  console.log("Availability Debug:", debug);
-  return debug.status;
+  console.log('Availability Debug:', debugResult);
+  return typeof debugResult === 'string' ? debugResult : debugResult.status;
 }
 
 /**
  * Checks if a given date is a university holiday.
  */
 function isUniversityHoliday(date) {
-  const formattedDate = format(date, "yyyy-MM-dd", {
-    timeZone: "America/New_York",
+  const formattedDate = format(date, 'yyyy-MM-dd', {
+    timeZone: 'America/New_York',
   });
   return UNIVERSITY_HOLIDAYS.includes(formattedDate);
 }
@@ -62,8 +78,8 @@ export function getClassroomAvailability(
   selectedStartDateTime = null,
   selectedEndDateTime = null,
   debug = false,
-) {
-  const timeZone = "America/New_York";
+): AvailabilityResult {
+  const timeZone = 'America/New_York';
   const debugInfo = debug ? { steps: [], events: [] } : null;
 
   // Get current times
@@ -78,7 +94,7 @@ export function getClassroomAvailability(
 
   if (debug) {
     debugInfo.steps.push({
-      step: "Times",
+      step: 'Times',
       requested: {
         start: currentStartTime.toISOString(),
         end: currentEndTime.toISOString(),
@@ -91,7 +107,7 @@ export function getClassroomAvailability(
   const dayOfWeek = dateToCheck.getDay();
   if (dayOfWeek === 0 || dayOfWeek === 6) {
     return [
-      debug ? { status: "Closed", reason: "Weekend" } : "Closed",
+      debug ? { status: 'Closed', reason: 'Weekend' } : 'Closed',
       undefined,
     ];
   }
@@ -99,7 +115,7 @@ export function getClassroomAvailability(
   // Check holidays
   if (isUniversityHoliday(dateToCheck)) {
     return [
-      debug ? { status: "Closed", reason: "Holiday" } : "Closed",
+      debug ? { status: 'Closed', reason: 'Holiday' } : 'Closed',
       undefined,
     ];
   }
@@ -111,8 +127,8 @@ export function getClassroomAvailability(
   if (currentHour < OPERATING_START_HOUR || currentHour >= OPERATING_END_HOUR) {
     return [
       debug
-        ? { status: "Closed", reason: "Outside Operating Hours" }
-        : "Closed",
+        ? { status: 'Closed', reason: 'Outside Operating Hours' }
+        : 'Closed',
       undefined,
     ];
   }
@@ -120,21 +136,21 @@ export function getClassroomAvailability(
   // Check if availability data exists
   if (!room.availability_times || !Array.isArray(room.availability_times)) {
     return [
-      debug ? { status: "Available", reason: "No Schedule Data" } : "Available",
+      debug ? { status: 'Available', reason: 'No Schedule Data' } : 'Available',
       undefined,
     ];
   }
 
   // Get events for the date and with status:1
-  const dateString = format(dateToCheck, "yyyy-MM-dd", { timeZone });
+  const dateString = format(dateToCheck, 'yyyy-MM-dd', { timeZone });
   const todayAvailability = room.availability_times.filter((timeRange) => {
-    const eventDatePart = timeRange.date.split("T")[0];
+    const eventDatePart = timeRange.date.split('T')[0];
     return eventDatePart === dateString && timeRange.status === 1;
   });
 
   if (todayAvailability.length === 0) {
     return [
-      debug ? { status: "Available", reason: "No Events Today" } : "Available",
+      debug ? { status: 'Available', reason: 'No Events Today' } : 'Available',
       undefined,
     ];
   }
@@ -148,7 +164,7 @@ export function getClassroomAvailability(
     const eventStart = decimalHoursToDate(currentStartTime, eventStartDecimal);
     const eventEnd = decimalHoursToDate(currentStartTime, eventEndDecimal);
 
-    const distanceToStart = eventStart - currentEndTime;
+    const distanceToStart = eventStart.getTime() - currentEndTime.getTime();
     if (distanceToStart > 0) {
       shortest = Math.min(shortest, distanceToStart);
     }
@@ -164,7 +180,7 @@ export function getClassroomAvailability(
 
   if (debug) {
     debugInfo.steps.push({
-      step: "Events",
+      step: 'Events',
       totalEvents: todayAvailability.length,
       overlappingEvents: overlappingEvents.length,
     });
@@ -178,11 +194,11 @@ export function getClassroomAvailability(
 
     return [
       {
-        status: overlappingEvents.length === 0 ? "Available" : "Unavailable",
+        status: overlappingEvents.length === 0 ? 'Available' : 'Unavailable',
         reason:
           overlappingEvents.length === 0
-            ? "No Conflicts"
-            : "Conflicting Events",
+            ? 'No Conflicts'
+            : 'Conflicting Events',
         debug: debugInfo,
       },
       shortest,
@@ -190,7 +206,7 @@ export function getClassroomAvailability(
   }
 
   return [
-    overlappingEvents.length === 0 ? "Available" : "Unavailable",
+    overlappingEvents.length === 0 ? 'Available' : 'Unavailable',
     shortest === Number.MAX_SAFE_INTEGER ? undefined : shortest,
   ];
 }
@@ -204,17 +220,19 @@ export function getBuildingAvailability(
   selectedEndDateTime = null,
 ) {
   if (!Array.isArray(classrooms) || classrooms.length === 0) {
-    return "No Data";
+    return 'No Data';
   }
 
   const hasAvailableRoom = classrooms.some((room) => {
-    const status = getClassroomAvailability(
+    const [statusResult] = getClassroomAvailability(
       room,
       selectedStartDateTime,
       selectedEndDateTime,
     );
-    return status === "Available";
+    const status =
+      typeof statusResult === 'string' ? statusResult : statusResult.status;
+    return status === 'Available';
   });
 
-  return hasAvailableRoom ? "Available" : "Unavailable";
+  return hasAvailableRoom ? 'Available' : 'Unavailable';
 }

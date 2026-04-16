@@ -1,5 +1,3 @@
-// src/legend.js
-
 import './legend.css'; // Import the CSS file for the legend
 
 export function addMapLegend(map) {
