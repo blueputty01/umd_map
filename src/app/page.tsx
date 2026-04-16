@@ -4,7 +4,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar from '../Sidebar';
 import Map from '../Map';
 import '../App.css'; // Import the CSS file for styling
-import '../index.css';
 
 const App = () => {
   const [selectedStartDateTime, setSelectedStartDateTime] = useState(

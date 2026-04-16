@@ -51,6 +51,101 @@ const Sidebar = ({
 
   const buildingRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const hasHydratedFromUrlRef = useRef(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const queryFromUrl = urlParams.get('q');
+    if (queryFromUrl !== null) {
+      setSearchQuery(queryFromUrl);
+    }
+
+    const modeFromUrl = urlParams.get('mode');
+    if (modeFromUrl === 'now') {
+      setIsNow(true);
+    }
+
+    if (modeFromUrl === 'range') {
+      setIsNow(false);
+    }
+
+    const showOptionsFromUrl = urlParams.get('showOptions');
+    if (showOptionsFromUrl !== null) {
+      setShowSearchOptions(
+        showOptionsFromUrl === '1' ||
+          showOptionsFromUrl.toLowerCase() === 'true',
+      );
+    }
+
+    const startFromUrl = urlParams.get('start');
+    const endFromUrl = urlParams.get('end');
+
+    const parsedStart = startFromUrl ? parseISO(startFromUrl) : null;
+    const parsedEnd = endFromUrl ? parseISO(endFromUrl) : null;
+    const hasValidStart =
+      parsedStart !== null && !Number.isNaN(parsedStart.getTime());
+    const hasValidEnd = parsedEnd !== null && !Number.isNaN(parsedEnd.getTime());
+
+    if (hasValidStart || hasValidEnd) {
+      setIsNow(false);
+    }
+
+    if (hasValidStart && parsedStart) {
+      onStartDateTimeChange(parsedStart);
+    }
+
+    if (hasValidEnd && parsedEnd) {
+      if (hasValidStart && parsedStart && parsedEnd < parsedStart) {
+        onEndDateTimeChange(parsedStart);
+      } else {
+        onEndDateTimeChange(parsedEnd);
+      }
+    }
+
+    hasHydratedFromUrlRef.current = true;
+  }, [onStartDateTimeChange, onEndDateTimeChange]);
+
+  useEffect(() => {
+    if (!hasHydratedFromUrlRef.current) {
+      return;
+    }
+
+    const currentUrl = new URL(window.location.href);
+    const params = new URLSearchParams(currentUrl.search);
+
+    if (searchQuery.trim()) {
+      params.set('q', searchQuery);
+    } else {
+      params.delete('q');
+    }
+
+    params.set('mode', isNow ? 'now' : 'range');
+
+    if (isNow) {
+      params.delete('start');
+      params.delete('end');
+      params.delete('showOptions');
+    } else {
+      params.set('start', format(selectedStartDateTime, "yyyy-MM-dd'T'HH:mm"));
+      params.set('end', format(selectedEndDateTime, "yyyy-MM-dd'T'HH:mm"));
+      params.set('showOptions', showSearchOptions ? '1' : '0');
+    }
+
+    const nextSearch = params.toString();
+    const nextUrl = `${currentUrl.pathname}${nextSearch ? `?${nextSearch}` : ''}${currentUrl.hash}`;
+    const currentPathAndSearch = `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+
+    if (nextUrl !== currentPathAndSearch) {
+      window.history.replaceState({}, '', nextUrl);
+    }
+  }, [
+    searchQuery,
+    isNow,
+    showSearchOptions,
+    selectedStartDateTime,
+    selectedEndDateTime,
+  ]);
 
   useEffect(() => {
     fetch('/buildings_data.json')
