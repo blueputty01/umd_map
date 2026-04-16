@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar from '../Sidebar';
 import Map from '../Map';
 import '../App.css'; // Import the CSS file for styling
+import '../index.css';
 
 const App = () => {
   const [selectedStartDateTime, setSelectedStartDateTime] = useState(
@@ -13,7 +14,13 @@ const App = () => {
 
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [showMap, setShowMap] = useState(false); // New state variable for toggling map
-  const [darkMode, setDarkMode] = useState(false); // State for dark mode toggle
+  const [darkMode, setDarkMode] = useState(() => {
+    // Initialize dark mode based on system preference
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  }); // State for dark mode toggle
   const [mapSelectionMode, setMapSelectionMode] = useState(false); // Track if selection came from map
 
   // Favorites system
@@ -79,7 +86,11 @@ const App = () => {
 
   // Effect to apply dark mode class to body
   useEffect(() => {
-    if (darkMode) {
+    if (
+      darkMode ||
+      (typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');
