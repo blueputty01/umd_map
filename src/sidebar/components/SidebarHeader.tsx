@@ -36,7 +36,7 @@ const SidebarHeader = ({
         </>
       ) : (
         <>
-          <h2 className="sidebar-title">Rooms</h2>
+          <h2 className="sidebar-title">UMD Rooms</h2>
           <div className="header-controls">
             <button
               className={`favorites-toggle ${showFavorites ? 'active' : ''}`}
