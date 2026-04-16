@@ -3,17 +3,13 @@ import './SidebarControls.css';
 interface SidebarControlsProps {
   focusedBuildingMode: boolean;
   isNow: boolean;
-  showSearchOptions: boolean;
   onToggleNowMode: () => void;
-  onToggleSearchOptions: () => void;
 }
 
 const SidebarControls = ({
   focusedBuildingMode,
   isNow,
-  showSearchOptions,
   onToggleNowMode,
-  onToggleSearchOptions,
 }: SidebarControlsProps) => {
   if (focusedBuildingMode) {
     return null;
@@ -32,17 +28,6 @@ const SidebarControls = ({
             : 'Select Date and Time Range'}
         </span>
       </div>
-
-      {!isNow && (
-        <div className="toggle-search">
-          <button className="toggle-button" onClick={onToggleSearchOptions}>
-            {showSearchOptions ? 'Hide Search Options' : 'Show Search Options'}
-            <span style={{ marginLeft: '10px' }}>
-              {showSearchOptions ? '▲' : '▼'}
-            </span>
-          </button>
-        </div>
-      )}
     </>
   );
 };

@@ -40,7 +40,6 @@ const Sidebar = ({
     null,
   );
   const [selectedClassroom, setSelectedClassroom] = useState<Room | null>(null);
-  const [showSearchOptions, setShowSearchOptions] = useState(false);
   const [showDescription, setShowDescription] = useState(false);
   const [isNow, setIsNow] = useState(true);
   const [showFavorites, setShowFavorites] = useState(false);
@@ -66,14 +65,6 @@ const Sidebar = ({
 
     if (modeFromUrl === 'range') {
       setIsNow(false);
-    }
-
-    const showOptionsFromUrl = urlParams.get('showOptions');
-    if (showOptionsFromUrl !== null) {
-      setShowSearchOptions(
-        showOptionsFromUrl === '1' ||
-          showOptionsFromUrl.toLowerCase() === 'true',
-      );
     }
 
     const startFromUrl = urlParams.get('start');
@@ -128,7 +119,6 @@ const Sidebar = ({
     } else {
       params.set('start', format(selectedStartDateTime, "yyyy-MM-dd'T'HH:mm"));
       params.set('end', format(selectedEndDateTime, "yyyy-MM-dd'T'HH:mm"));
-      params.set('showOptions', showSearchOptions ? '1' : '0');
     }
 
     const nextSearch = params.toString();
@@ -141,7 +131,6 @@ const Sidebar = ({
   }, [
     searchQuery,
     isNow,
-    showSearchOptions,
     selectedStartDateTime,
     selectedEndDateTime,
   ]);
@@ -450,14 +439,11 @@ const Sidebar = ({
       <SidebarControls
         focusedBuildingMode={focusedBuildingMode}
         isNow={isNow}
-        showSearchOptions={showSearchOptions}
         onToggleNowMode={handleToggleChange}
-        onToggleSearchOptions={() => setShowSearchOptions((prev) => !prev)}
       />
 
       <SearchOptions
         isNow={isNow}
-        showSearchOptions={showSearchOptions}
         selectedStartDateTime={selectedStartDateTime}
         selectedEndDateTime={selectedEndDateTime}
         onStartDateChange={handleStartDateChangeInternal}
