@@ -88,9 +88,9 @@ const App = () => {
       (typeof window !== 'undefined' &&
         window.matchMedia('(prefers-color-scheme: dark)').matches)
     ) {
-      document.body.classList.add('dark-mode');
+      setDarkMode(true);
     } else {
-      document.body.classList.remove('dark-mode');
+      setDarkMode(false);
     }
   }, [darkMode]);
 
