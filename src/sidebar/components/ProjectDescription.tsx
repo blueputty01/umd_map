@@ -16,7 +16,17 @@ const ProjectDescription = ({
   return (
     <div className="project-description">
       <h3>Project Description</h3>
-      <p>I forked </p>
+      <p>
+        I forked{' '}
+        <a
+          href="https://github.com/andrewxie04/umdrooms"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Andrew Xie's amazing UMD Rooms project
+        </a>
+        for accessibility and to add some features.
+      </p>
     </div>
   );
 };
