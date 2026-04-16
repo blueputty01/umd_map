@@ -37,7 +37,7 @@ const ClassroomItem = ({
           className={`availability ${availabilityStatus.toLowerCase().replace(' ', '-')}`}
         >
           {availabilityMinutes
-            ? `${availabilityStatus} for ${Math.round(availabilityMinutes / 60 / 1000)} min`
+            ? `${availabilityStatus} for ${availabilityMinutes} min`
             : availabilityStatus}
         </div>
       </div>

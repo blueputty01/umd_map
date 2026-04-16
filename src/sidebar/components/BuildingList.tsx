@@ -65,6 +65,9 @@ const BuildingList = ({
     );
   }
 
+  console.log(expandedBuilding?.code);
+  console.log(filteredBuildings);
+
   return (
     <ul className="building-list">
       {filteredBuildings.map((building) => (
@@ -74,7 +77,7 @@ const BuildingList = ({
             selectedBuilding?.code === building.code ? 'selected-building' : ''
           }
         >
-          <details>
+          <details open={expandedBuilding?.code !== building.code}>
             <summary
               className={`building-name ${isBuildingFavorite(building.code) ? 'favorited' : ''}`}
               onClick={() => onBuildingClick(building)}
