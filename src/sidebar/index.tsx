@@ -3,14 +3,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { format, parse, parseISO } from 'date-fns';
 
-import './Sidebar.css';
-import { getClassroomAvailability } from './availability';
-import BuildingList from './sidebar/components/BuildingList';
-import ProjectDescription from './sidebar/components/ProjectDescription';
-import SearchOptions from './sidebar/components/SearchOptions';
-import SearchSection from './sidebar/components/SearchSection';
-import SidebarControls from './sidebar/components/SidebarControls';
-import SidebarHeader from './sidebar/components/SidebarHeader';
+import './index.css';
+import { getClassroomAvailability } from '../availability';
+import BuildingList from './components/BuildingList';
+import ProjectDescription from './components/ProjectDescription';
+import SearchOptions from './components/SearchOptions';
+import SearchSection from './components/SearchSection';
+import SidebarControls from './components/SidebarControls';
+import SidebarHeader from './components/SidebarHeader';
 import type {
   AvailabilityTime,
   Building,
@@ -18,7 +18,7 @@ import type {
   FavoriteRoom,
   Room,
   SidebarProps,
-} from './sidebar/types';
+} from './types';
 
 const Sidebar = ({
   onBuildingSelect,
@@ -127,12 +127,7 @@ const Sidebar = ({
     if (nextUrl !== currentPathAndSearch) {
       window.history.replaceState({}, '', nextUrl);
     }
-  }, [
-    searchQuery,
-    isNow,
-    selectedStartDateTime,
-    selectedEndDateTime,
-  ]);
+  }, [searchQuery, isNow, selectedStartDateTime, selectedEndDateTime]);
 
   useEffect(() => {
     fetch('/buildings_data.json')

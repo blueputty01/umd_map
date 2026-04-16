@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import Sidebar from '../Sidebar';
+import Sidebar from '../sidebar';
 import './page.css';
 
 const App = () => {

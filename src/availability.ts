@@ -155,7 +155,10 @@ export function getClassroomAvailability(
     ];
   }
 
-  let shortest = Number.MAX_SAFE_INTEGER;
+  const end = new Date(currentEndTime);
+  end.setHours(OPERATING_END_HOUR, 0, 0, 0);
+  let shortest = end.getTime() - currentEndTime.getTime();
+  console.log(currentStartTime);
   // Check for overlapping events
   const overlappingEvents = todayAvailability.filter((timeRange) => {
     const eventStartDecimal = parseFloat(timeRange.time_start);
