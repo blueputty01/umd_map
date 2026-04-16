@@ -8,7 +8,7 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  animation: fadeIn 0.5s ease;
+  /* animation: fadeIn 0.5s ease; */
 }
 
 .building-name {
@@ -26,9 +26,9 @@
   justify-content: space-between;
   align-items: center;
   background-color: rgba(255, 255, 255, 0.7);
-  animation: slideFromRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-  animation-fill-mode: both;
-  animation-delay: calc(var(--animation-order, 0) * 0.05s);
+  /* animation: slideFromRight 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); */
+  /* animation-fill-mode: both; */
+  /* animation-delay: calc(var(--animation-order, 0) * 0.05s); */
 }
 
 .building-name:before {
@@ -122,9 +122,9 @@
   border-left: 0 solid #0071e3;
   overflow: hidden;
   position: relative;
-  animation: slideFromRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  animation-fill-mode: both;
-  animation-delay: calc(var(--animation-order, 0) * 0.05s);
+  /* animation: slideFromRight 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); */
+  /* animation-fill-mode: both; */
+  /* animation-delay: calc(var(--animation-order, 0) * 0.05s); */
 }
 
 .classroom-item:after {
