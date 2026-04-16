@@ -1,4 +1,5 @@
 import { toZonedTime, format } from 'date-fns-tz';
+import { Room } from './sidebar/types';
 
 // --- Types & Constants ---
 
@@ -7,18 +8,6 @@ const OPERATING_HOURS = { start: 7, end: 22 };
 
 // Using a Set for O(1) lookups
 const UNIVERSITY_HOLIDAYS = new Set(['2024-01-01', '2024-07-04', '2024-12-25']);
-
-interface TimeRange {
-  date: string;
-  time_start: string; // decimal string e.g. "14.5"
-  time_end: string; // decimal string
-  status: number;
-  event_name?: string;
-}
-
-interface Room {
-  availability_times: TimeRange[];
-}
 
 // --- Helpers ---
 
