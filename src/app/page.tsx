@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Sidebar from '../Sidebar';
-import '../App.css'; // Import the CSS file for styling
+import './page.css';
 
 const App = () => {
   const [selectedStartDateTime, setSelectedStartDateTime] = useState(
