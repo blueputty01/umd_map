@@ -41,6 +41,9 @@ const SearchOptions = ({
       <input
         type="time"
         id="start-time"
+        min="06:00"
+        max="22:00"
+        step="1800" // 30-minute increments
         value={format(selectedStartDateTime, 'HH:mm')}
         onChange={(event) => onStartTimeChange(event.target.value)}
       />
@@ -49,6 +52,9 @@ const SearchOptions = ({
       <input
         type="date"
         id="end-date"
+        min="06:00"
+        max="22:00"
+        step="1800" // 30-minute increments
         value={format(selectedEndDateTime, 'yyyy-MM-dd')}
         onChange={(event) => onEndDateChange(event.target.value)}
       />
