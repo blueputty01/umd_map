@@ -46,7 +46,6 @@ const Sidebar = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [focusedBuildingMode, setFocusedBuildingMode] = useState(false);
 
-  const buildingRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const sidebarRef = useRef<HTMLDivElement | null>(null);
   const hasHydratedFromUrlRef = useRef(false);
 
@@ -464,7 +463,6 @@ const Sidebar = ({
         showFavorites={showFavorites}
         favoriteBuildings={favoriteBuildings as FavoriteBuilding[]}
         favoriteRooms={favoriteRooms as FavoriteRoom[]}
-        buildingRefs={buildingRefs}
         onBuildingClick={handleBuildingClick}
         onClassroomClick={handleClassroomClick}
         onToggleFavoriteBuilding={toggleFavoriteBuilding}
