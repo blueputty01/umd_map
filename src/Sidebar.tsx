@@ -19,7 +19,6 @@ import type {
   Room,
   SidebarProps,
 } from './sidebar/types';
-import { generateTimeOptions } from './sidebar/utils';
 
 const Sidebar = ({
   onBuildingSelect,
@@ -171,7 +170,7 @@ const Sidebar = ({
   };
 
   const handleStartTimeChangeInternal = (value: string) => {
-    const parsedTime = parse(value, 'h:mm a', new Date());
+    const parsedTime = parse(value, 'HH:mm', new Date());
     if (Number.isNaN(parsedTime.getTime())) {
       console.error('Invalid start time selected:', value);
       return;
@@ -202,7 +201,7 @@ const Sidebar = ({
   };
 
   const handleEndTimeChangeInternal = (value: string) => {
-    const parsedTime = parse(value, 'h:mm a', new Date());
+    const parsedTime = parse(value, 'HH:mm', new Date());
     if (Number.isNaN(parsedTime.getTime())) {
       console.error('Invalid end time selected:', value);
       return;
@@ -215,8 +214,6 @@ const Sidebar = ({
       return newDateTime;
     });
   };
-
-  const timeOptions = generateTimeOptions('7:00 AM', '10:00 PM', 30);
 
   const filteredBuildings = useMemo<Building[]>(() => {
     let baseBuildings: Building[] = buildings;
@@ -372,7 +369,6 @@ const Sidebar = ({
         showSearchOptions={showSearchOptions}
         selectedStartDateTime={selectedStartDateTime}
         selectedEndDateTime={selectedEndDateTime}
-        timeOptions={timeOptions}
         onStartDateChange={handleStartDateChangeInternal}
         onStartTimeChange={handleStartTimeChangeInternal}
         onEndDateChange={handleEndDateChangeInternal}

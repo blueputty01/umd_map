@@ -192,10 +192,6 @@ body.dark-mode {
   color: #ffffff;
 }
 
-.dark-mode .react-aria-Label {
-  color: #ffffff;
-}
-
 .dark-mode .slider {
   background-color: rgba(120, 120, 128, 0.3);
 }
