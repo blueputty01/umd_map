@@ -43,8 +43,6 @@ export interface SidebarProps {
   selectedEndDateTime: Date;
   onStartDateTimeChange: (update: DateTimeUpdater) => void;
   onEndDateTimeChange: (update: DateTimeUpdater) => void;
-  showMap: boolean;
-  setShowMap: React.Dispatch<React.SetStateAction<boolean>>;
   darkMode?: boolean;
   toggleDarkMode?: () => void;
   favoriteBuildings?: FavoriteBuilding[];

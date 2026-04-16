@@ -27,8 +27,6 @@ const Sidebar = ({
   selectedEndDateTime,
   onStartDateTimeChange,
   onEndDateTimeChange,
-  showMap,
-  setShowMap,
   darkMode = false,
   toggleDarkMode = () => {},
   favoriteBuildings = [],
@@ -85,7 +83,8 @@ const Sidebar = ({
     const parsedEnd = endFromUrl ? parseISO(endFromUrl) : null;
     const hasValidStart =
       parsedStart !== null && !Number.isNaN(parsedStart.getTime());
-    const hasValidEnd = parsedEnd !== null && !Number.isNaN(parsedEnd.getTime());
+    const hasValidEnd =
+      parsedEnd !== null && !Number.isNaN(parsedEnd.getTime());
 
     if (hasValidStart || hasValidEnd) {
       setIsNow(false);
@@ -237,15 +236,14 @@ const Sidebar = ({
   }, [selectedClassroom, selectedStartDateTime, isNow]);
 
   const handleToggleChange = () => {
-    setIsNow((prevIsNow) => {
-      const newIsNow = !prevIsNow;
-      if (newIsNow) {
-        const now = new Date();
-        onStartDateTimeChange(now);
-        onEndDateTimeChange(now);
-      }
-      return newIsNow;
-    });
+    const newIsNow = !isNow;
+    setIsNow(newIsNow);
+
+    if (newIsNow) {
+      const now = new Date();
+      onStartDateTimeChange(now);
+      onEndDateTimeChange(now);
+    }
   };
 
   const handleStartDateChangeInternal = (value: string) => {
@@ -452,10 +450,8 @@ const Sidebar = ({
       <SidebarControls
         focusedBuildingMode={focusedBuildingMode}
         isNow={isNow}
-        showMap={showMap}
         showSearchOptions={showSearchOptions}
         onToggleNowMode={handleToggleChange}
-        onToggleMap={() => setShowMap((prev) => !prev)}
         onToggleSearchOptions={() => setShowSearchOptions((prev) => !prev)}
       />
 

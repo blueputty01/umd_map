@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import Sidebar from '../Sidebar';
-import Map from '../Map';
 import '../App.css'; // Import the CSS file for styling
 
 const App = () => {
@@ -12,7 +11,6 @@ const App = () => {
   const [selectedEndDateTime, setSelectedEndDateTime] = useState(new Date());
 
   const [selectedBuilding, setSelectedBuilding] = useState(null);
-  const [showMap, setShowMap] = useState(false); // New state variable for toggling map
   const [darkMode, setDarkMode] = useState(() => {
     // Initialize dark mode based on system preference
     if (typeof window !== 'undefined') {
@@ -149,9 +147,7 @@ const App = () => {
   }, []);
 
   return (
-    <div
-      className={`app-container ${showMap ? '' : 'no-map'} ${darkMode ? 'dark-mode' : ''}`}
-    >
+    <div className={`app-container no-map ${darkMode ? 'dark-mode' : ''}`}>
       <Sidebar
         onBuildingSelect={handleBuildingSelect}
         selectedBuilding={selectedBuilding}
@@ -159,8 +155,6 @@ const App = () => {
         selectedEndDateTime={selectedEndDateTime}
         onStartDateTimeChange={handleStartDateTimeChange}
         onEndDateTimeChange={handleEndDateTimeChange}
-        showMap={showMap}
-        setShowMap={setShowMap}
         darkMode={darkMode}
         toggleDarkMode={toggleDarkMode}
         favoriteBuildings={favoriteBuildings}
@@ -169,17 +163,6 @@ const App = () => {
         toggleFavoriteRoom={toggleFavoriteRoom}
         mapSelectionMode={mapSelectionMode}
       />
-      {showMap && (
-        <div className="map-container">
-          <Map
-            selectedBuilding={selectedBuilding}
-            onBuildingSelect={handleBuildingSelect}
-            selectedStartDateTime={selectedStartDateTime}
-            selectedEndDateTime={selectedEndDateTime}
-            darkMode={darkMode}
-          />
-        </div>
-      )}
     </div>
   );
 };
