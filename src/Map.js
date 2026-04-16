@@ -1,4 +1,4 @@
-// src/Map.js
+'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
@@ -26,13 +26,13 @@ const Map = ({
       buildingsData,
       selectedStartDateTime,
       selectedEndDateTime,
-      selectedBuilding
+      selectedBuilding,
     ) => {
       const features = buildingsData.map((building, index) => {
         const availabilityStatus = getBuildingAvailability(
           building.classrooms,
           selectedStartDateTime,
-          selectedEndDateTime
+          selectedEndDateTime,
         );
 
         return {
@@ -113,7 +113,7 @@ const Map = ({
         });
       }
     },
-    []
+    [],
   );
 
   // Initialize the map
@@ -139,14 +139,14 @@ const Map = ({
         new mapboxgl.AttributionControl({
           compact: true,
         }),
-        'top-right'
+        'top-right',
       );
     } else {
       map.addControl(
         new mapboxgl.AttributionControl({
           compact: false,
         }),
-        'bottom-right'
+        'bottom-right',
       );
     }
 
@@ -170,7 +170,7 @@ const Map = ({
             buildingsData,
             selectedStartDateTime,
             selectedEndDateTime,
-            selectedBuilding
+            selectedBuilding,
           );
 
           // Add a legend to the map
@@ -215,7 +215,7 @@ const Map = ({
                     longitude: clickedFeature.geometry.coordinates[0],
                     latitude: clickedFeature.geometry.coordinates[1],
                   },
-                  true
+                  true,
                 ); // Pass true as second parameter to indicate map selection
               }
             }
@@ -244,7 +244,7 @@ const Map = ({
           buildingsDataRef.current,
           selectedStartDateTime,
           selectedEndDateTime,
-          selectedBuilding
+          selectedBuilding,
         );
       } else {
         mapRef.current.once('styledata', () => {
@@ -253,7 +253,7 @@ const Map = ({
             buildingsDataRef.current,
             selectedStartDateTime,
             selectedEndDateTime,
-            selectedBuilding
+            selectedBuilding,
           );
         });
       }

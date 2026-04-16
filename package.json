@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@atlaskit/datetime-picker": "^15.13.1",
-    "@atlaskit/form": "^10.5.10",
+    "@atlaskit/datetime-picker": "^17.6.5",
+    "@atlaskit/form": "^15.5.5",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@internationalized/date": "^3.5.6",
@@ -17,21 +17,20 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "mapbox-gl": "^3.7.0",
+    "next": "^16.2.4",
     "react": "^18.3.1",
     "react-aria": "^3.35.1",
     "react-aria-components": "^1.4.1",
     "react-datepicker": "^7.5.0",
     "react-datetime": "^3.2.0",
     "react-dom": "^18.3.1",
-    "react-scripts": "5.0.1",
     "typescript": "5.1.6",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "npx serve@latest ./build"
   },
   "eslintConfig": {
     "extends": [

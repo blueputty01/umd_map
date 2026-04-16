@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import Sidebar from './Sidebar';
-import Map from './Map';
-import './App.css'; // Import the CSS file for styling
+import Sidebar from '../Sidebar';
+import Map from '../Map';
+import '../App.css'; // Import the CSS file for styling
 
 const App = () => {
   const [selectedStartDateTime, setSelectedStartDateTime] = useState(
@@ -19,12 +19,18 @@ const App = () => {
   // Favorites system
   const [favoriteBuildings, setFavoriteBuildings] = useState(() => {
     // Initialize from localStorage if available
+    if (typeof window == 'undefined' || !window.localStorage) {
+      return [];
+    }
     const saved = localStorage.getItem('favoriteBuildings');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [favoriteRooms, setFavoriteRooms] = useState(() => {
     // Initialize from localStorage if available
+    if (typeof window == 'undefined' || !window.localStorage) {
+      return [];
+    }
     const saved = localStorage.getItem('favoriteRooms');
     return saved ? JSON.parse(saved) : [];
   });
