@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
 
 .sidebar {
-  padding: 20px;
+  padding: 1rem;
   width: 100%;
   max-width: 50rem;
   margin: 0 auto;
