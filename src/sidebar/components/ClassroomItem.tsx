@@ -12,13 +12,18 @@ interface ClassroomItemProps {
 
 const ClassroomItem = ({
   room,
-  isSelected,
   isFavorite,
   availabilityStatus,
   availabilityMinutes,
   onClassroomClick,
   onToggleFavorite,
 }: ClassroomItemProps) => {
+  let availDesc = availabilityStatus;
+  if (availabilityMinutes) {
+    const minutes = availabilityMinutes % 60;
+    const hours = Math.floor(availabilityMinutes / 60);
+    availDesc += ` (${hours > 0 ? `${hours}h ` : ''}${minutes}m)`;
+  }
   return (
     <div
       className={`classroom-item ${isFavorite ? 'favorited' : ''}`}
@@ -36,9 +41,7 @@ const ClassroomItem = ({
         <div
           className={`availability ${availabilityStatus.toLowerCase().replace(' ', '-')}`}
         >
-          {availabilityMinutes
-            ? `${availabilityStatus} for ${availabilityMinutes} min`
-            : availabilityStatus}
+          {availDesc}
         </div>
       </div>
     </div>
