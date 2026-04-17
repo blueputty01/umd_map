@@ -81,19 +81,6 @@ const App = () => {
     });
   }, []);
 
-  // Effect to apply dark mode class to body
-  useEffect(() => {
-    if (
-      darkMode ||
-      (typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
-    ) {
-      setDarkMode(true);
-    } else {
-      setDarkMode(false);
-    }
-  }, [darkMode]);
-
   // Effect to save favorites to localStorage
   useEffect(() => {
     localStorage.setItem(
